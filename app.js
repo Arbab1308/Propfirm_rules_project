@@ -242,6 +242,8 @@
     DOM.btnCloseCalibration = document.getElementById("btnCloseCalibration");
 
     DOM.btnSaveCurrentScenario = document.getElementById("btnSaveCurrentScenario");
+    DOM.btnDownloadPresetPdf = document.getElementById("btnDownloadPresetPdf");
+    DOM.btnDownloadLivePresetFromDrawer = document.getElementById("btnDownloadLivePresetFromDrawer");
     DOM.btnExportMarkdown = document.getElementById("btnExportMarkdown");
     DOM.btnExportJson = document.getElementById("btnExportJson");
     DOM.btnPrintPdf = document.getElementById("btnPrintPdf");
@@ -643,6 +645,20 @@
         DOM.btnClosePresets.click();
         return;
       }
+      const pdfBtn = e.target.closest(".btn-pdf-preset");
+      if (pdfBtn) {
+        const presetId = pdfBtn.dataset.presetId;
+        const preloaded = state.clipboardManager.getPreloadedScenarios();
+        let target = preloaded.find(p => p.id === presetId);
+        if (!target) {
+          const userScenarios = state.clipboardManager.getSavedScenarios();
+          target = userScenarios.find(s => s.id === presetId);
+        }
+        if (target) {
+          downloadCalibratedPresetPdf(target.name, target);
+        }
+        return;
+      }
       const delBtn = e.target.closest(".btn-delete-preset");
       if (delBtn) {
         state.clipboardManager.deleteCustomScenario(delBtn.dataset.presetId);
@@ -774,9 +790,21 @@
       showToast(`Scenario "${scenarioName}" saved!`);
     });
 
+    if (DOM.btnDownloadPresetPdf) {
+      DOM.btnDownloadPresetPdf.addEventListener("click", () => downloadCalibratedPresetPdf());
+    }
+
+    if (DOM.btnDownloadLivePresetFromDrawer) {
+      DOM.btnDownloadLivePresetFromDrawer.addEventListener("click", () => {
+        DOM.drawerPresets.classList.remove("open");
+        DOM.panelPresets.classList.remove("open");
+        downloadCalibratedPresetPdf();
+      });
+    }
+
     DOM.btnExportMarkdown.addEventListener("click", () => exportPlaybookMarkdown());
     DOM.btnExportJson.addEventListener("click", () => exportPlaybookJson());
-    DOM.btnPrintPdf.addEventListener("click", () => window.print());
+    DOM.btnPrintPdf.addEventListener("click", () => downloadCalibratedPresetPdf());
   }
 
   // ==========================================
@@ -1488,9 +1516,14 @@
           <span class="badge badge-friction">${preset.badge}</span>
         </div>
         <p style="font-size: 10.5px; color: var(--text-secondary);">${preset.description}</p>
-        <button class="btn btn-sm btn-outline-gold btn-load-preset" data-preset-id="${preset.id}" style="align-self: flex-start; margin-top: 4px;">
-          Load Scenario
-        </button>
+        <div style="display: flex; gap: 6px; margin-top: 4px;">
+          <button class="btn btn-sm btn-outline-gold btn-load-preset" data-preset-id="${preset.id}">
+            Load Scenario
+          </button>
+          <button class="btn btn-sm btn-pdf-preset" data-preset-id="${preset.id}" title="Download this preset as PDF">
+            Download PDF
+          </button>
+        </div>
       </div>
     `).join("");
 
@@ -1511,6 +1544,7 @@
           <p style="font-size: 10.5px; color: var(--text-secondary);">${sc.description}</p>
           <div style="display: flex; gap: 6px; margin-top: 4px;">
             <button class="btn btn-sm btn-load-preset" data-preset-id="${sc.id}">Load</button>
+            <button class="btn btn-sm btn-pdf-preset" data-preset-id="${sc.id}" title="Download this preset as PDF">Download PDF</button>
             <button class="btn btn-sm danger btn-delete-preset" data-preset-id="${sc.id}">Delete</button>
           </div>
         </div>
@@ -1626,6 +1660,368 @@
 
     downloadFile(`PropPlaybook_${state.currentModule}_$${state.accountSize}.json`, JSON.stringify(payload, null, 2), "application/json");
     showToast("JSON playbook exported.");
+  }
+
+  function downloadCalibratedPresetPdf(customTitle, presetData) {
+    let moduleId = state.currentModule;
+    let accountSize = state.accountSize;
+    let activeRules = [];
+    let scenarioName = customTitle;
+
+    if (presetData) {
+      moduleId = presetData.moduleId || state.currentModule;
+      accountSize = presetData.accountSize || state.accountSize;
+      scenarioName = presetData.name || customTitle;
+
+      const allNative = window.FIRMS_DATA_HELPER.getRulesByModule(moduleId);
+      const checkedSet = new Set(presetData.checkedRuleIds || []);
+      activeRules = allNative.filter(r => checkedSet.has(r.id));
+      if (presetData.importedRules && presetData.importedRules.length > 0) {
+        activeRules.push(...presetData.importedRules);
+      }
+      if (presetData.customRules && presetData.customRules.length > 0) {
+        activeRules.push(...presetData.customRules);
+      }
+    } else {
+      activeRules = getActiveCheckedRules();
+      if (!scenarioName) {
+        scenarioName = prompt("Enter a title for this Calibrated Preset PDF:", `${getModuleName(state.currentModule)} Calibrated Risk Model`);
+        if (!scenarioName) scenarioName = `${getModuleName(state.currentModule)} Calibrated Risk Model`;
+      }
+    }
+
+    if (activeRules.length === 0) {
+      showToast("No active rules selected to export.");
+      return;
+    }
+
+    // Resolve conflicts
+    const conflictResult = state.probEngine.resolveRuleConflicts(activeRules);
+    const resolvedActiveRules = conflictResult.resolvedRules;
+    const effectiveRules = resolvedActiveRules.filter(r => !r.isSuperseded);
+
+    const mcParams = { ...state.mcParams };
+    const preCheck = state.probEngine.calculateAnalyticalPreCheck(mcParams, effectiveRules, accountSize);
+    const cert = state.probEngine.calculateCertainty(moduleId, effectiveRules, accountSize);
+    const mc = state.probEngine.runMonteCarloSimulation(mcParams, effectiveRules, accountSize, 10000);
+    const econ = state.probEngine.calculateRetainedSplitAndEconomics(moduleId, effectiveRules, accountSize, mc.mcEndToEnd);
+    const killers = state.probEngine.calculateMarginalRuleImpacts(moduleId, effectiveRules, accountSize);
+    const heatmap = state.probEngine.generateSensitivityHeatmap(mcParams, effectiveRules, accountSize);
+
+    const moduleDef = window.MODULE_DEFINITIONS.find(m => m.id === moduleId);
+    const moduleName = moduleDef ? moduleDef.name : moduleId;
+    const dateStr = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+    const dollarRisk = ((accountSize * mcParams.riskPct) / 100).toFixed(2);
+
+    const pdfHtml = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>${escHtml(scenarioName)} - Calibrated Prop Risk Audit</title>
+  <style>
+    @page {
+      size: A4 portrait;
+      margin: 10mm 12mm 12mm 12mm;
+      @bottom-right {
+        content: "Page " counter(page) " of " counter(pages);
+        font-family: system-ui, sans-serif;
+        font-size: 7.5pt;
+        color: #777;
+      }
+    }
+    * { box-sizing: border-box; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      font-size: 8.5pt;
+      line-height: 1.35;
+      color: #111111;
+      background: #FFFFFF;
+      margin: 0;
+      padding: 0;
+    }
+    .no-print-bar {
+      background: #111111;
+      color: #FFFFFF;
+      padding: 10px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+    .no-print-bar button {
+      cursor: pointer;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 5px 12px;
+      border-radius: 4px;
+      border: none;
+    }
+    .btn-print-action { background: #B68D40; color: #111111; margin-right: 8px; }
+    .btn-close-action { background: #333333; color: #FFFFFF; }
+    @media print {
+      .no-print-bar { display: none !important; }
+    }
+    .report-header {
+      border-bottom: 2.5px solid #B68D40;
+      padding-bottom: 6pt;
+      margin-bottom: 10pt;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+    }
+    .badge-institutional {
+      font-size: 7.5pt;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #B68D40;
+      background: #FAF8F5;
+      border: 1px solid #D1C2A5;
+      padding: 2px 7px;
+      border-radius: 3px;
+      display: inline-block;
+      margin-bottom: 4pt;
+    }
+    h1 { font-size: 15pt; font-weight: 800; margin: 0; letter-spacing: -0.3px; }
+    h2 { font-size: 10.5pt; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1.5px solid #111; padding-bottom: 3px; margin-top: 12pt; margin-bottom: 6pt; }
+    h3 { font-size: 9pt; font-weight: 700; margin-top: 8pt; margin-bottom: 4pt; }
+    .hero-strip {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 6pt;
+      background: #FAF9F6;
+      border: 1px solid #E5DFD5;
+      border-radius: 4px;
+      padding: 8pt;
+      margin-bottom: 10pt;
+      page-break-inside: avoid;
+    }
+    .hero-stat { border-right: 1px solid #E5DFD5; padding-right: 6pt; }
+    .hero-stat:last-child { border-right: none; }
+    .hero-label { font-size: 6.8pt; text-transform: uppercase; font-weight: 700; color: #666; margin-bottom: 2pt; }
+    .hero-val { font-size: 15pt; font-weight: 800; line-height: 1.1; }
+    .hero-val.danger { color: #A61C1C; }
+    .hero-val.gold { color: #8A6418; }
+    .hero-sub { font-size: 6.8pt; color: #777; margin-top: 2pt; }
+    table { width: 100%; border-collapse: collapse; font-size: 7.8pt; margin-bottom: 8pt; }
+    th, td { padding: 4pt 5pt; text-align: left; border-bottom: 1px solid #EAE6DF; }
+    th { background: #F4F1EA; font-weight: 700; text-transform: uppercase; font-size: 6.8pt; letter-spacing: 0.5px; border-top: 1px solid #DDD7CD; border-bottom: 1.5px solid #DDD7CD; }
+    tr:nth-child(even) td { background: #FCFBF9; }
+    .text-right { text-align: right; }
+    .text-center { text-align: center; }
+    .badge { display: inline-block; font-size: 6.2pt; font-weight: 700; padding: 1.5px 4.5px; border-radius: 3px; text-transform: uppercase; }
+    .badge-hard { background: #FDE8E8; color: #9B1C1C; border: 1px solid #F8B4B4; }
+    .badge-soft { background: #FEF08A; color: #854D0E; border: 1px solid #FDE047; }
+    .badge-slash { background: #FFEDD5; color: #9A3412; border: 1px solid #FDBA74; }
+    .badge-firm { background: #EFF6FF; color: #1E40AF; border: 1px solid #BFDBFE; }
+    .badge-imported { background: #F3E8FF; color: #6B21A8; border: 1px solid #E9D5FF; }
+    .avoid-break { page-break-inside: avoid; }
+    .page-break { page-break-before: always; }
+    .killer-chip { background: #F9FAFB; border: 1px solid #E5E7EB; border-radius: 3px; padding: 3pt 6pt; margin-bottom: 3pt; display: flex; justify-content: space-between; font-size: 7.2pt; }
+    .heatmap-table th, .heatmap-table td { padding: 3pt; font-size: 6.8pt; text-align: center; }
+  </style>
+</head>
+<body>
+  <div class="no-print-bar">
+    <div><strong>Calibrated Preset PDF Ready:</strong> ${escHtml(scenarioName)}</div>
+    <div>
+      <button class="btn-print-action" onclick="window.print()">Save / Print as PDF</button>
+      <button class="btn-close-action" onclick="window.close()">Close Window</button>
+    </div>
+  </div>
+
+  <div class="report-header">
+    <div>
+      <div class="badge-institutional">PROPFIRM RISK ANALYTICS · CALIBRATED PRESET AUDIT</div>
+      <h1>${escHtml(scenarioName)}</h1>
+      <p style="font-size: 8pt; color: #555; margin-top: 2pt;">
+        Module Lane: <strong>${escHtml(moduleName)}</strong> · Account Size: <strong>$${accountSize.toLocaleString()}</strong>
+      </p>
+    </div>
+    <div style="text-align: right; font-size: 7.5pt; color: #555;">
+      <div><strong>Date:</strong> ${dateStr}</div>
+      <div><strong>Simulation:</strong> 10,000 Monte Carlo Paths</div>
+      <div><strong>Risk Model:</strong> 3-Layer Certainty & Economics</div>
+    </div>
+  </div>
+
+  <!-- Hero Scorecard -->
+  <div class="hero-strip avoid-break">
+    <div class="hero-stat">
+      <div class="hero-label">Passing Certainty (MC)</div>
+      <div class="hero-val ${mc.mcEndToEnd < 15 ? 'danger' : 'gold'}">${mc.mcEndToEnd.toFixed(2)}%</div>
+      <div class="hero-sub">Grade ${cert.riskGrade} (${cert.gradeLabel})</div>
+    </div>
+    <div class="hero-stat">
+      <div class="hero-label">Effective Retained Split</div>
+      <div class="hero-val gold">${econ.effectiveRetainedSplitPct}%</div>
+      <div class="hero-sub">${escHtml(econ.splitSlashReason)}</div>
+    </div>
+    <div class="hero-stat">
+      <div class="hero-label">Break-Even Win Rate</div>
+      <div class="hero-val">${preCheck.breakEvenWinRatePct}%</div>
+      <div class="hero-sub">Calibrated: ${mcParams.winRate}% (Edge: ${preCheck.edgeOverBreakEven > 0 ? '+' : ''}${preCheck.edgeOverBreakEven}%)</div>
+    </div>
+    <div class="hero-stat">
+      <div class="hero-label">Risk Budget to Breach</div>
+      <div class="hero-val ${preCheck.lossesToDailyBreach <= 3 ? 'danger' : ''}">${preCheck.lossesToDailyBreach} Daily / ${preCheck.lossesToMaxBreach} Max</div>
+      <div class="hero-sub">At ${mcParams.riskPct}% Risk ($${dollarRisk}/Trade)</div>
+    </div>
+  </div>
+
+  <!-- Calibrated Parameters (Right) & Telemetry Grid -->
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8pt; margin-bottom: 10pt;" class="avoid-break">
+    <div style="background: #FAFAFA; border: 1px solid #E5E5E5; border-radius: 4px; padding: 6pt;">
+      <h3 style="font-size: 8pt; text-transform: uppercase; color: #444; border-bottom: 1px solid #DDD; padding-bottom: 2pt; margin-top: 0;">
+        Calibrated Trader Parameters (Right Panel)
+      </h3>
+      <table style="margin-bottom: 0;">
+        <tbody>
+          <tr><td>Strategy Win Rate:</td><td class="text-right" style="font-weight: 700;">${mcParams.winRate}%</td></tr>
+          <tr><td>Average Risk:Reward Ratio:</td><td class="text-right" style="font-weight: 700;">${mcParams.avgRR} : 1</td></tr>
+          <tr><td>Risk Per Trade:</td><td class="text-right" style="font-weight: 700;">${mcParams.riskPct}% ($${dollarRisk})</td></tr>
+          <tr><td>Execution Frequency:</td><td class="text-right" style="font-weight: 700;">${mcParams.tradesPerDay} trades/day</td></tr>
+          <tr><td>Outcome Variance (R:R Jitter):</td><td class="text-right" style="font-weight: 700;">${mcParams.variance}</td></tr>
+          <tr><td>Intraday Adverse Excursion (MAE):</td><td class="text-right" style="font-weight: 700;">${mcParams.maeRiskPct}% of Risk</td></tr>
+          <tr><td>Expected Value (EV) per Trade:</td><td class="text-right" style="font-weight: 700; color: ${preCheck.evPerTradeR >= 0 ? '#047857' : '#B91C1C'};">${preCheck.evPerTradeR} R ($${preCheck.evPerTradeDollar})</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div style="background: #FAFAFA; border: 1px solid #E5E5E5; border-radius: 4px; padding: 6pt;">
+      <h3 style="font-size: 8pt; text-transform: uppercase; color: #444; border-bottom: 1px solid #DDD; padding-bottom: 2pt; margin-top: 0;">
+        Monte Carlo Telemetry & Economic Feasibility
+      </h3>
+      <table style="margin-bottom: 0;">
+        <tbody>
+          <tr><td>Phase 1 Evaluation Pass Rate:</td><td class="text-right" style="font-weight: 700;">${cert.p1Certainty.toFixed(1)}% (MC: ${mc.mcP1Pass.toFixed(1)}%)</td></tr>
+          ${cert.p2Certainty !== null ? `<tr><td>Phase 2 Evaluation Pass Rate:</td><td class="text-right" style="font-weight: 700;">${cert.p2Certainty.toFixed(1)}%</td></tr>` : ''}
+          <tr><td>Funded 1st Payout Survival Rate:</td><td class="text-right" style="font-weight: 700;">${cert.fundedCertainty.toFixed(1)}% (MC: ${mc.mcFundedPass.toFixed(1)}%)</td></tr>
+          <tr><td>Statistical Attempts to First Payout:</td><td class="text-right" style="font-weight: 700;">${econ.expectedAttempts} attempts</td></tr>
+          <tr><td>True Capital Required to Funded:</td><td class="text-right" style="font-weight: 700; color: #A61C1C;">$${econ.trueCostToFunded.toLocaleString()}</td></tr>
+          <tr><td>Break-Even Payout Cycles:</td><td class="text-right" style="font-weight: 700;">${econ.breakEvenCycles} cycles</td></tr>
+          <tr><td>Projected 6-Month Median Net ROI:</td><td class="text-right" style="font-weight: 700; color: ${econ.medianNet6mDollar >= 0 ? '#047857' : '#B91C1C'};">$${econ.medianNet6mDollar.toLocaleString()} (${econ.medianNet6mRoiPct}%)</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Left-Hand Active Rules Table -->
+  <h2>Active Rules & Operational Constraints (${resolvedActiveRules.length} Total Rules)</h2>
+  <p style="font-size: 7.5pt; color: #555; margin-bottom: 6pt;">
+    The exact rule stack active on the left checklist for this preset, including thresholds, originating firms, and hazard ratings:
+  </p>
+
+  <table class="avoid-break">
+    <thead>
+      <tr>
+        <th style="width: 20%;">Category</th>
+        <th style="width: 40%;">Rule Title & Specification</th>
+        <th style="width: 15%;">Originating Firm</th>
+        <th style="width: 13%;">Severity</th>
+        <th class="text-right" style="width: 12%;">Multiplier</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${resolvedActiveRules.map(r => `
+        <tr style="${r.isSuperseded ? 'opacity: 0.6; text-decoration: line-through;' : ''}">
+          <td style="font-size: 7pt; font-weight: 600; color: #444;">${escHtml(r.category.toUpperCase().replace(/_/g, ' '))}</td>
+          <td>
+            <strong>${escHtml(r.title)}</strong><br>
+            <span style="font-size: 6.8pt; color: #666;">Threshold: ${escHtml(r.thresholdText || (r.thresholdValue ? r.thresholdValue + '%' : 'Strict Rule'))}</span>
+            ${r.isSuperseded ? `<br><span style="font-size: 6.2pt; color: #A61C1C; font-weight: 700;">(SUPERSEDED BY ${escHtml(r.supersededBy)})</span>` : ''}
+          </td>
+          <td>
+            <span class="badge badge-firm">${escHtml(r.firmName)}</span><br>
+            <span style="font-size: 6.2pt; color: #666;">${escHtml(r.modelName || r.module)}</span>
+            ${r.isImported ? `<br><span class="badge badge-imported">Imported</span>` : ''}
+          </td>
+          <td>
+            <span class="badge ${r.severity === 'hard' ? 'badge-hard' : (r.severity === 'soft' ? 'badge-soft' : 'badge-slash')}">
+              ${r.severity === 'hard' ? 'Hard Breach' : (r.severity === 'soft' ? 'Profit Deduction' : 'Split Slash')}
+            </span>
+          </td>
+          <td class="text-right" style="font-weight: 700; color: ${r.impactMultiplier <= 0.6 ? '#991B1B' : (r.impactMultiplier <= 0.8 ? '#B45309' : '#1F2937')};">
+            ${r.impactMultiplier.toFixed(2)}x
+          </td>
+        </tr>
+      `).join('')}
+    </tbody>
+  </table>
+
+  <!-- Deadliest Rule Killers in this Preset -->
+  <h3 style="margin-top: 8pt;">Top Deadliest Rule Killers in this Preset</h3>
+  <div class="avoid-break" style="margin-bottom: 8pt;">
+    ${killers.slice(0, 4).map((k, idx) => `
+      <div class="killer-chip">
+        <div><strong>#${idx + 1}: ${escHtml(k.title)}</strong> (${escHtml(k.firmName)})</div>
+        <div style="font-weight: 700; color: #047857;">Remove to gain: +${k.deltaCertainty.toFixed(2)}% absolute (${k.relGainPct}% relative)</div>
+      </div>
+    `).join('')}
+  </div>
+
+  <!-- 5x5 Sensitivity Matrix -->
+  <h3>Win Rate % vs. Risk Per Trade % Sensitivity Grid</h3>
+  <table class="heatmap-table avoid-break">
+    <thead>
+      <tr>
+        <th style="text-align: left;">Strategy Win Rate</th>
+        ${heatmap.matrix[0].cells.map(c => `<th>Risk ${c.riskPct.toFixed(2)}%</th>`).join('')}
+      </tr>
+    </thead>
+    <tbody>
+      ${heatmap.matrix.map(row => `
+        <tr>
+          <td style="text-align: left; font-weight: 700;">WR ${row.winRate}%</td>
+          ${row.cells.map(c => {
+            const isSweet = c.isSweetSpot;
+            const bg = isSweet ? '#D1FAE5' : (c.passCertainty < 8 ? '#FEE2E2' : (c.passCertainty < 20 ? '#FEF3C7' : '#E0F2FE'));
+            const color = isSweet ? '#065F46' : (c.passCertainty < 8 ? '#991B1B' : (c.passCertainty < 20 ? '#92400E' : '#075985'));
+            return `<td style="background: ${bg}; color: ${color}; ${isSweet ? 'font-weight: 800; border: 1.5px solid #065F46;' : ''}">
+              ${c.passCertainty.toFixed(1)}%
+              ${isSweet ? '<br><span style="font-size: 5pt; text-transform: uppercase;">SWEET SPOT</span>' : ''}
+            </td>`;
+          }).join('')}
+        </tr>
+      `).join('')}
+    </tbody>
+  </table>
+
+  <div style="margin-top: 10pt; border-top: 1px solid #DDD; padding-top: 5pt; font-size: 7pt; color: #777; text-align: center;">
+    Generated by 5-Firm Prop Trading Risk Engine · Active Preset: ${escHtml(scenarioName)} · 10,000 Monte Carlo Paths
+  </div>
+
+</body>
+</html>`;
+
+    const printWindow = window.open('', '_blank');
+    if (printWindow) {
+      printWindow.document.open();
+      printWindow.document.write(pdfHtml);
+      printWindow.document.close();
+      printWindow.focus();
+      setTimeout(() => {
+        printWindow.print();
+      }, 400);
+      showToast(`Preset PDF generated for: ${scenarioName}`);
+    } else {
+      downloadFile(`Preset_${scenarioName.replace(/[^a-zA-Z0-9_-]/g, '_')}.html`, pdfHtml, 'text/html');
+      showToast(`Pop-up blocked: saved report as printable HTML. Open and print to save as PDF.`);
+    }
+  }
+
+  function escHtml(str) {
+    if (!str) return '';
+    return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+
+  function getModuleName(id) {
+    const m = window.MODULE_DEFINITIONS.find(mod => mod.id === id);
+    return m ? m.name : id;
   }
 
   function downloadFile(filename, content, type) {

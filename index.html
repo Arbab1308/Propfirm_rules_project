@@ -509,15 +509,20 @@
           Save Custom Scenario
         </button>
 
-        <div class="export-btn-group">
+        <button id="btnDownloadPresetPdf" class="btn btn-gold" style="width: 100%; margin-top: 6px;" title="Download active rules and calibrated data as PDF">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Download Calibrated Preset (PDF)
+        </button>
+
+        <div class="export-btn-group" style="margin-top: 8px;">
           <button id="btnExportMarkdown" class="btn btn-sm" title="Export markdown report">
             Export .MD
           </button>
           <button id="btnExportJson" class="btn btn-sm" title="Export JSON playbook">
             Export JSON
           </button>
-          <button id="btnPrintPdf" class="btn btn-sm" title="Print or save as institutional PDF">
-            Print / PDF
+          <button id="btnPrintPdf" class="btn btn-sm btn-outline-gold" title="Download or print institutional PDF report">
+            PDF Report
           </button>
         </div>
       </div>
@@ -776,6 +781,11 @@
         <button class="action-icon-btn" id="btnClosePresets">✕</button>
       </div>
       <div class="drawer-body">
+        <button id="btnDownloadLivePresetFromDrawer" class="btn btn-gold" style="width: 100%; margin-bottom: 12px; display: flex; align-items: center; justify-content: center; gap: 6px;" title="Download current live calibrated setup as PDF">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Download Current Calibrated Setup (PDF)
+        </button>
+
         <h4 style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text-muted);">Curated Benchmark Presets</h4>
         <div id="preloadedPresetsList" style="display: flex; flex-direction: column; gap: 8px;">
           <!-- Loaded dynamically -->
