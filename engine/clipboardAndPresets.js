@@ -148,14 +148,14 @@ class ClipboardAndPresetsManager {
    * Computes certainty scores across all 6 modules and all 6 account sizes
    */
   generateAllModulesHeatmapMatrix(allRawRules) {
-    const modules = [
-      { id: "instant", name: "Instant", subtitle: "Direct-to-Funded" },
-      { id: "oneStepStd", name: "1-Step Std", subtitle: "Standard / Flex" },
-      { id: "oneStepLite", name: "1-Step Lite", subtitle: "Lite / Labs" },
-      { id: "twoStepStd", name: "2-Step Std", subtitle: "Standard / Flex" },
-      { id: "twoStepLite", name: "2-Step Lite", subtitle: "Lite / Pro" },
-      { id: "bigAccounts", name: "Big Accounts", subtitle: "$100K–$400K+" }
-    ];
+    const modules = (typeof window !== "undefined" && window.MODULE_DEFINITIONS)
+      ? window.MODULE_DEFINITIONS
+      : [
+          { id: "instant", name: "Instant", subtitle: "Direct-to-Funded" },
+          { id: "oneStepStd", name: "1-Step Std", subtitle: "Standard / Flex" },
+          { id: "twoStepStd", name: "2-Step Std", subtitle: "Standard / Flex" },
+          { id: "bigAccounts", name: "Big Accounts", subtitle: "$100K–$400K+" }
+        ];
 
     const accountSizes = [5000, 10000, 25000, 50000, 100000, 200000];
 

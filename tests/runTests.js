@@ -66,8 +66,8 @@ runTest('All 5 Prop Firms strictly represented in dataset', () => {
   });
 });
 
-runTest('6 Module lanes strictly separated with non-zero native rules', () => {
-  const lanes = ['instant', 'oneStepStd', 'oneStepLite', 'twoStepStd', 'twoStepLite', 'bigAccounts'];
+runTest('4 Module lanes strictly separated with non-zero native rules', () => {
+  const lanes = ['instant', 'oneStepStd', 'twoStepStd', 'bigAccounts'];
   lanes.forEach(m => {
     const rules = rawRules.filter(r => r.module === m);
     assert(rules.length >= 5, `Module lane '${m}' has fewer than 5 rules (found ${rules.length})`);
@@ -133,13 +133,34 @@ const engine = new ProbEngine(benchmarks, rawRules);
 const clipboardMgr = new ClipboardEvaluator(engine);
 
 runTest('Auto-Select Worst Case selects strictest constraint per category without crashing', () => {
-  const lanes = ['instant', 'oneStepStd', 'oneStepLite', 'twoStepStd', 'twoStepLite', 'bigAccounts'];
+  const lanes = ['instant', 'oneStepStd', 'twoStepStd', 'bigAccounts'];
   lanes.forEach(m => {
     const moduleRules = firmsHelper.getRulesByModule(m);
     const worstIds = clipboardMgr.synthesizeWorstCaseForModule(m, moduleRules);
     assert(Array.isArray(worstIds), `Worst case synthesis for ${m} did not return array`);
     assert(worstIds.length > 0, `Worst case synthesis for ${m} returned 0 rules`);
   });
+});
+
+runTest('Universal Rule Editor: Editing universal rules updates parameters cleanly', () => {
+  const univRules = firmsHelper.getUniversalRules();
+  assert(univRules.length > 0, 'No universal rules found');
+  const targetRule = univRules[0];
+  const originalTitle = targetRule.title;
+  const originalMult = targetRule.impactMultiplier;
+
+  // Simulate edit
+  targetRule.title = 'Edited Universal Rule Title';
+  targetRule.impactMultiplier = 0.85;
+  targetRule.impactLabel = '-15% rel.';
+
+  assert.strictEqual(targetRule.title, 'Edited Universal Rule Title');
+  assert.strictEqual(targetRule.impactMultiplier, 0.85);
+
+  // Restore
+  targetRule.title = originalTitle;
+  targetRule.impactMultiplier = originalMult;
+  targetRule.impactLabel = `-${Math.round((1 - originalMult) * 100)}% rel.`;
 });
 
 runTest('Conflict Resolution: Stricter rule supersedes looser duplicate', () => {

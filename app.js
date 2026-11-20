@@ -14,27 +14,21 @@
     checkedRulesByModule: {
       instant: new Set(),
       oneStepStd: new Set(),
-      oneStepLite: new Set(),
       twoStepStd: new Set(),
-      twoStepLite: new Set(),
       bigAccounts: new Set()
     },
 
     importedRulesByModule: {
       instant: [],
       oneStepStd: [],
-      oneStepLite: [],
       twoStepStd: [],
-      twoStepLite: [],
       bigAccounts: []
     },
 
     customRulesByModule: {
       instant: [],
       oneStepStd: [],
-      oneStepLite: [],
       twoStepStd: [],
-      twoStepLite: [],
       bigAccounts: []
     },
 
@@ -486,8 +480,25 @@
       showToast(`Disabled killer rule. Passing rate recalculated!`);
     });
 
-    // Universal Checkbox clicks
+    // Universal clicks (Checkbox, Edit, Copy)
     DOM.universalRulesContainer.addEventListener("click", e => {
+      const copyBtn = e.target.closest(".btn-copy-rule");
+      if (copyBtn) {
+        const ruleId = copyBtn.dataset.ruleId;
+        const rule = findRuleById(ruleId);
+        if (rule) {
+          state.clipboardManager.copyRule(rule, 'universal');
+          showToast(`Copied universal rule to clipboard: ${rule.title}`);
+        }
+        return;
+      }
+      const editBtn = e.target.closest(".btn-edit-rule");
+      if (editBtn) {
+        const ruleId = editBtn.dataset.ruleId;
+        const rule = findRuleById(ruleId);
+        if (rule) openEditRuleModal(rule);
+        return;
+      }
       const checkbox = e.target.closest(".rule-checkbox");
       if (checkbox) {
         const ruleId = checkbox.dataset.ruleId;
@@ -764,6 +775,7 @@
 
         DOM.modalEditRule.classList.remove("open");
         renderActiveModule();
+        renderUniversalRules();
         recalculateAll();
         showToast(`Rule updated: ${title}`);
       }
@@ -985,14 +997,12 @@
 
         <div class="rule-actions-col">
           <span class="impact-pill ${impactClass}">${rule.impactLabel || '-10% rel.'}</span>
-          ${!isUniversal ? `
-            <button class="action-icon-btn btn-copy-rule" data-rule-id="${rule.id}" title="Copy to cross-module clipboard">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-            </button>
-            <button class="action-icon-btn btn-edit-rule" data-rule-id="${rule.id}" title="Edit threshold live">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-            </button>
-          ` : ''}
+          <button class="action-icon-btn btn-copy-rule" data-rule-id="${rule.id}" title="Copy to cross-module clipboard">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          </button>
+          <button class="action-icon-btn btn-edit-rule" data-rule-id="${rule.id}" title="Edit threshold live">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+          </button>
           ${deleteBtn}
         </div>
       </div>

@@ -1723,7 +1723,7 @@ h1, h2, h3, h4, h5, h6 {
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
             Pre-Trade Sandbox & CSV Importer
           </button>
-          <button id="btnOpenHeatmap" class="btn btn-primary" title="Compare All 6 Modules Worst-Case across all account sizes">
+          <button id="btnOpenHeatmap" class="btn btn-primary" title="Compare All 4 Modules Worst-Case across all account sizes">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
             All-Modules Heatmap Matrix
           </button>
@@ -1740,7 +1740,7 @@ h1, h2, h3, h4, h5, h6 {
 
       <!-- Row 2: Module Switcher Tabs + Account Size Pills + Firm Filter -->
       <div class="nav-controls-row">
-        <!-- 6 Module Lanes -->
+        <!-- 4 Module Lanes -->
         <div class="module-tabs" id="moduleTabsContainer">
           <!-- Rendered dynamically -->
         </div>
@@ -2378,7 +2378,7 @@ h1, h2, h3, h4, h5, h6 {
   <div class="modal-overlay" id="modalHeatmap">
     <div class="modal-card" style="max-width: 980px;">
       <div class="modal-header">
-        <h3 class="modal-title">Compare All 6 Modules Worst-Case Passing Certainty</h3>
+        <h3 class="modal-title">Compare All 4 Modules Worst-Case Passing Certainty</h3>
         <button class="action-icon-btn" id="btnCloseHeatmap">✕</button>
       </div>
       <div class="modal-body">
@@ -2849,9 +2849,7 @@ const FIRMS_INFO = {
 const MODULE_DEFINITIONS = [
   { id: "instant", name: "Instant", subtitle: "Direct-to-Funded", badge: "Direct Entry" },
   { id: "oneStepStd", name: "1-Step Std", subtitle: "Standard / Flex", badge: "Single Phase" },
-  { id: "oneStepLite", name: "1-Step Lite", subtitle: "Lite / Labs", badge: "Compressed" },
   { id: "twoStepStd", name: "2-Step Std", subtitle: "Standard / Flex", badge: "Classic Two-Phase" },
-  { id: "twoStepLite", name: "2-Step Lite", subtitle: "Lite / Pro", badge: "Tight Drawdown" },
   { id: "bigAccounts", name: "Big Accounts", subtitle: "$100K–$400K+ & Scaling", badge: "Institutional" }
 ];
 
@@ -3690,113 +3688,7 @@ const RAW_RULES_DATA = [
 
 
   // ==========================================
-  // MODULE 3: 1-STEP LITE / LABS
-  // ==========================================
-
-  // --- FundingPips 1 Step Labs ---
-  {
-    id: "fp_labs_target_dd",
-    firmId: "fundingpips",
-    firmName: "FundingPips",
-    modelName: "1 Step Labs",
-    module: "oneStepLite",
-    category: "targets_dd",
-    ruleType: "profit_target",
-    thresholdValue: 5,
-    title: "Target: 5% | Daily Loss: 1% Hard Breach | Max Loss: 3% EOD Trailing",
-    thresholdText: "5% Target; 1% Daily Loss Hard Breach; 3% EOD Trailing DD (locks at BE at +3%); $100K only",
-    severity: "hard",
-    isWorstCase: true,
-    impactMultiplier: 0.32,
-    impactLabel: "-68% rel.",
-    impactStage: "both",
-    description: "The most extreme daily loss limit in the industry: a 1% drawdown on any single day instantly breaches the account.",
-    defaultChecked: false
-  },
-  {
-    id: "fp_labs_payout_terms",
-    firmId: "fundingpips",
-    firmName: "FundingPips",
-    modelName: "1 Step Labs",
-    module: "oneStepLite",
-    category: "payout_fees",
-    ruleType: "payout_cap",
-    thresholdValue: 85,
-    title: "Daily 85% Payouts (Requires ≥3% Profit & ≥$200 on Request Day, Capped $1K/Day)",
-    thresholdText: "Daily payouts up to $1,000/day; must be ≥3% up overall and ≥$200 in profit on the request day",
-    severity: "friction",
-    isWorstCase: true,
-    impactMultiplier: 0.85,
-    impactLabel: "-15% rel.",
-    impactStage: "funded",
-    splitRetentionPct: 85,
-    description: "Fast daily payouts, but capped at $1,000 per request and requires making $200 on the day you ask for money.",
-    defaultChecked: false
-  },
-  {
-    id: "fp_labs_autoclose",
-    firmId: "fundingpips",
-    firmName: "FundingPips",
-    modelName: "1 Step Labs",
-    module: "oneStepLite",
-    category: "execution_news",
-    ruleType: "execution_trap",
-    thresholdValue: 0,
-    title: "Mandatory Daily Auto-Close (No Overnight/Weekend, No Swing Add-on)",
-    thresholdText: "Master account auto-closes all positions daily at market close; overnight & weekend holding strictly disabled",
-    severity: "hard",
-    isWorstCase: true,
-    impactMultiplier: 0.82,
-    impactLabel: "-18% rel.",
-    impactStage: "both",
-    description: "Forces intraday scalping/day-trading only. No swing options available.",
-    defaultChecked: false
-  },
-
-  // --- FundedSquad 1-Step Lite ---
-  {
-    id: "fs_1slite_target_dd",
-    firmId: "fundedsquad",
-    firmName: "FundedSquad",
-    modelName: "1-Step Lite",
-    module: "oneStepLite",
-    category: "targets_dd",
-    ruleType: "profit_target",
-    thresholdValue: 8,
-    title: "Target: 8% | Daily Loss: 3% | Max Loss: 7% Static",
-    thresholdText: "8% Target; 3% Daily Loss; 7% Static Drawdown; 0 Min Days Eval; On-Demand up to 100%",
-    severity: "soft",
-    isWorstCase: false,
-    impactMultiplier: 0.86,
-    impactLabel: "-14% rel.",
-    impactStage: "eval",
-    description: "Balanced lite model: 8% target against 7% static drawdown with standard 3% daily limit.",
-    defaultChecked: false
-  },
-  {
-    id: "fs_1slite_floating_hold",
-    firmId: "fundedsquad",
-    firmName: "FundedSquad",
-    modelName: "1-Step Lite",
-    module: "oneStepLite",
-    category: "intraday_floating",
-    ruleType: "floating_risk",
-    thresholdValue: 1.5,
-    title: "Funded Floating Risk 1.5% + 60s Min Hold Time",
-    thresholdText: "Funded floating loss >1.5%: 1st = 40% split cut, 2nd = breach; 60s minimum hold duration",
-    severity: "hard",
-    isWorstCase: true,
-    impactMultiplier: 0.74,
-    impactLabel: "-26% rel.",
-    impactStage: "funded",
-    splitRetentionPct: 40,
-    description: "Requires maintaining trade duration >=60 seconds and capping open floating losses under 1.5%.",
-    defaultChecked: false
-  },
-
-
-  // ==========================================
-  // MODULE 4: 2-STEP STANDARD / FLEX
+  // MODULE 3: 2-STEP STANDARD / FLEX
   // ==========================================
 
   // --- FundingPips 2 Step Standard & Flex ---
@@ -4119,134 +4011,7 @@ const RAW_RULES_DATA = [
 
 
   // ==========================================
-  // MODULE 5: 2-STEP LITE / PRO
-  // ==========================================
-
-  // --- FundingPips 2 Step Pro ---
-  {
-    id: "fp_pro_target_dd",
-    firmId: "fundingpips",
-    firmName: "FundingPips",
-    modelName: "2 Step Pro",
-    module: "twoStepLite",
-    category: "targets_dd",
-    ruleType: "profit_target",
-    thresholdValue: 6,
-    title: "P1: 6% / P2: 6% | Daily: 3% | Max Loss: 6% Static",
-    thresholdText: "P1 6%, P2 6%; Daily 3%; Max 6% Static Drawdown; 0 Min Days; No fee refund",
-    severity: "hard",
-    isWorstCase: true,
-    impactMultiplier: 0.72,
-    impactLabel: "-28% rel.",
-    impactStage: "both",
-    description: "Lower profit targets (6% + 6%) but constrained by a tight 6% static max drawdown and 3% daily limit.",
-    defaultChecked: false
-  },
-  {
-    id: "fp_pro_striking",
-    firmId: "fundingpips",
-    firmName: "FundingPips",
-    modelName: "2 Step Pro",
-    module: "twoStepLite",
-    category: "consistency_buffer",
-    ruleType: "consistency",
-    thresholdValue: 35,
-    title: "35% Consistency Cap + 1% Trade Idea Striking System",
-    thresholdText: "Weekly 80% or On-Demand 100% requires 35% consistency and 1% risk per trade idea striking rules",
-    severity: "hard",
-    isWorstCase: true,
-    impactMultiplier: 0.74,
-    impactLabel: "-26% rel.",
-    impactStage: "funded",
-    splitRetentionPct: 50,
-    description: "Striking system enforces 1% max risk per trade idea, with repeated infractions slashing payouts.",
-    defaultChecked: false
-  },
-
-  // --- FundedSquad 2-Step Lite ---
-  {
-    id: "fs_2slite_target_dd",
-    firmId: "fundedsquad",
-    firmName: "FundedSquad",
-    modelName: "2-Step Lite",
-    module: "twoStepLite",
-    category: "targets_dd",
-    ruleType: "profit_target",
-    thresholdValue: 6,
-    title: "P1: 6% / P2: 6% | Daily: 4% | Max Loss: 8% Static",
-    thresholdText: "P1 6%, P2 6%; Daily 4%; Max 8% Static; 0 Min Days Eval / 5 Funded Days (≥0.5%); 100% Refund",
-    severity: "soft",
-    isWorstCase: false,
-    impactMultiplier: 0.88,
-    impactLabel: "-12% rel.",
-    impactStage: "both",
-    description: "6%/6% targets with 8% static drawdown and 4% daily limit. Requires 5 funded days >=0.5% profit.",
-    defaultChecked: false
-  },
-  {
-    id: "fs_2slite_daily_cap",
-    firmId: "fundedsquad",
-    firmName: "FundedSquad",
-    modelName: "2-Step Lite",
-    module: "twoStepLite",
-    category: "consistency_buffer",
-    ruleType: "payout_cap",
-    thresholdValue: 3000,
-    title: "Funded Daily Profit Cap: $3,000/Day + Floating Risk 1.5%",
-    thresholdText: "Daily profit capped at $3,000/day (excess deducted); Floating risk 1.5% breach trap",
-    severity: "hard",
-    isWorstCase: true,
-    impactMultiplier: 0.82,
-    impactLabel: "-18% rel.",
-    impactStage: "funded",
-    splitRetentionPct: 40,
-    description: "Deducts excess daily profits above $3K and enforces 1.5% floating risk cap.",
-    defaultChecked: false
-  },
-
-  // --- FundedNext Stellar Lite ---
-  {
-    id: "fn_lite_target_dd",
-    firmId: "fundednext",
-    firmName: "FundedNext",
-    modelName: "Stellar Lite",
-    module: "twoStepLite",
-    category: "targets_dd",
-    ruleType: "profit_target",
-    thresholdValue: 8,
-    title: "P1: 8% / P2: 4% | Daily: 4% (Balance-Based) | Max Loss: 8% Static",
-    thresholdText: "P1 8%, P2 4%; Daily 4%; Max 8% Static; 5 Min Days/Phase; First Payout wait 21 days",
-    severity: "soft",
-    isWorstCase: false,
-    impactMultiplier: 0.88,
-    impactLabel: "-12% rel.",
-    impactStage: "both",
-    description: "Compressed P2 target (4%), but requires 21-day wait for first payout and offers no 15% eval share.",
-    defaultChecked: false
-  },
-  {
-    id: "fn_lite_refund_delayed",
-    firmId: "fundednext",
-    firmName: "FundedNext",
-    modelName: "Stellar Lite",
-    module: "twoStepLite",
-    category: "payout_fees",
-    ruleType: "payout_cap",
-    thresholdValue: 3,
-    title: "Delayed Fee Refund (3rd Payout Only) + No Eval Profit Share",
-    thresholdText: "Challenge fee is only refunded on the 3rd successful payout; 0% eval profit share credited",
-    severity: "friction",
-    isWorstCase: true,
-    impactMultiplier: 0.90,
-    impactLabel: "-10% rel.",
-    impactStage: "funded",
-    description: "Traders must survive 3 consecutive payout cycles (~6-8 weeks) to recover the upfront challenge fee.",
-    defaultChecked: false
-  },
-
-
-  // ==========================================
-  // MODULE 6: BIG ACCOUNTS ($100K–$400K+ & SCALING)
+  // MODULE 4: BIG ACCOUNTS ($100K–$400K+ & SCALING)
   // ==========================================
 
   // --- FundingPips Big Accounts ---
@@ -6048,14 +5813,14 @@ class ClipboardAndEvaluator {
   // ==========================================
 
   generateAllModulesHeatmapMatrix(allRawRules) {
-    const modules = [
-      { id: "instant", name: "Instant", subtitle: "Direct-to-Funded" },
-      { id: "oneStepStd", name: "1-Step Std", subtitle: "Standard / Flex" },
-      { id: "oneStepLite", name: "1-Step Lite", subtitle: "Lite / Labs" },
-      { id: "twoStepStd", name: "2-Step Std", subtitle: "Standard / Flex" },
-      { id: "twoStepLite", name: "2-Step Lite", subtitle: "Lite / Pro" },
-      { id: "bigAccounts", name: "Big Accounts", subtitle: "$100K–$400K+" }
-    ];
+    const modules = (typeof window !== "undefined" && window.MODULE_DEFINITIONS)
+      ? window.MODULE_DEFINITIONS
+      : [
+          { id: "instant", name: "Instant", subtitle: "Direct-to-Funded" },
+          { id: "oneStepStd", name: "1-Step Std", subtitle: "Standard / Flex" },
+          { id: "twoStepStd", name: "2-Step Std", subtitle: "Standard / Flex" },
+          { id: "bigAccounts", name: "Big Accounts", subtitle: "$100K–$400K+" }
+        ];
 
     const accountSizes = [5000, 10000, 25000, 50000, 100000, 200000];
     const matrix = [];
@@ -6294,27 +6059,21 @@ if (typeof window !== "undefined") {
     checkedRulesByModule: {
       instant: new Set(),
       oneStepStd: new Set(),
-      oneStepLite: new Set(),
       twoStepStd: new Set(),
-      twoStepLite: new Set(),
       bigAccounts: new Set()
     },
 
     importedRulesByModule: {
       instant: [],
       oneStepStd: [],
-      oneStepLite: [],
       twoStepStd: [],
-      twoStepLite: [],
       bigAccounts: []
     },
 
     customRulesByModule: {
       instant: [],
       oneStepStd: [],
-      oneStepLite: [],
       twoStepStd: [],
-      twoStepLite: [],
       bigAccounts: []
     },
 
@@ -6766,8 +6525,25 @@ if (typeof window !== "undefined") {
       showToast(`Disabled killer rule. Passing rate recalculated!`);
     });
 
-    // Universal Checkbox clicks
+    // Universal clicks (Checkbox, Edit, Copy)
     DOM.universalRulesContainer.addEventListener("click", e => {
+      const copyBtn = e.target.closest(".btn-copy-rule");
+      if (copyBtn) {
+        const ruleId = copyBtn.dataset.ruleId;
+        const rule = findRuleById(ruleId);
+        if (rule) {
+          state.clipboardManager.copyRule(rule, 'universal');
+          showToast(`Copied universal rule to clipboard: ${rule.title}`);
+        }
+        return;
+      }
+      const editBtn = e.target.closest(".btn-edit-rule");
+      if (editBtn) {
+        const ruleId = editBtn.dataset.ruleId;
+        const rule = findRuleById(ruleId);
+        if (rule) openEditRuleModal(rule);
+        return;
+      }
       const checkbox = e.target.closest(".rule-checkbox");
       if (checkbox) {
         const ruleId = checkbox.dataset.ruleId;
@@ -7044,6 +6820,7 @@ if (typeof window !== "undefined") {
 
         DOM.modalEditRule.classList.remove("open");
         renderActiveModule();
+        renderUniversalRules();
         recalculateAll();
         showToast(`Rule updated: ${title}`);
       }
@@ -7265,14 +7042,12 @@ if (typeof window !== "undefined") {
 
         <div class="rule-actions-col">
           <span class="impact-pill ${impactClass}">${rule.impactLabel || '-10% rel.'}</span>
-          ${!isUniversal ? `
-            <button class="action-icon-btn btn-copy-rule" data-rule-id="${rule.id}" title="Copy to cross-module clipboard">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-            </button>
-            <button class="action-icon-btn btn-edit-rule" data-rule-id="${rule.id}" title="Edit threshold live">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-            </button>
-          ` : ''}
+          <button class="action-icon-btn btn-copy-rule" data-rule-id="${rule.id}" title="Copy to cross-module clipboard">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          </button>
+          <button class="action-icon-btn btn-edit-rule" data-rule-id="${rule.id}" title="Edit threshold live">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+          </button>
           ${deleteBtn}
         </div>
       </div>

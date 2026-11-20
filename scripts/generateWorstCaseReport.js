@@ -31,7 +31,7 @@ const cm = new ClipboardEvaluator(engine);
 
 console.log('Synthesizing TEST FIRM - Combining worst rules across Instant, 1-Step, 2-Step, Big Accounts & Universal...');
 
-const modulesList = ['instant', 'oneStepStd', 'oneStepLite', 'twoStepStd', 'twoStepLite', 'bigAccounts', 'universal'];
+const modulesList = ['instant', 'oneStepStd', 'twoStepStd', 'bigAccounts', 'universal'];
 const allWorstMap = new Map();
 
 modulesList.forEach(mId => {
@@ -133,9 +133,7 @@ const sizeResults = accountSizes.map(sz => {
 const modules = [
   { id: 'instant', name: 'Instant Funding (Direct-to-Funded)' },
   { id: 'oneStepStd', name: '1-Step Standard / Flex' },
-  { id: 'oneStepLite', name: '1-Step Lite / Labs' },
   { id: 'twoStepStd', name: '2-Step Standard / Flex' },
-  { id: 'twoStepLite', name: '2-Step Lite / Pro' },
   { id: 'bigAccounts', name: 'Big Accounts ($100K–$400K+)' }
 ];
 
