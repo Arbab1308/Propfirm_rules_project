@@ -1,0 +1,1083 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>TEST FIRM: The Ultimate Worst-Case Prop Trading Challenge - Rules & Probability Report</title>
+  <style>
+    @page {
+      size: A4 portrait;
+      margin: 10mm 12mm 12mm 12mm;
+      @bottom-right {
+        content: "Page " counter(page) " of " counter(pages);
+        font-family: 'Segoe UI', system-ui, sans-serif;
+        font-size: 7.5pt;
+        color: #777;
+      }
+    }
+
+    * { box-sizing: border-box; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      font-size: 8.5pt;
+      line-height: 1.32;
+      color: #111111;
+      background: #FFFFFF;
+      margin: 0;
+      padding: 0;
+    }
+
+    h1, h2, h3, h4 { margin: 0; font-weight: 700; color: #111111; }
+    h1 { font-size: 16pt; letter-spacing: -0.5px; }
+    h2 { font-size: 11pt; border-bottom: 1.5px solid #111111; padding-bottom: 3px; margin-top: 12pt; margin-bottom: 6pt; text-transform: uppercase; letter-spacing: 0.5px; }
+    h3 { font-size: 9.5pt; margin-top: 8pt; margin-bottom: 4pt; }
+
+    .header-banner {
+      border-bottom: 3px solid #B68D40;
+      padding-bottom: 6pt;
+      margin-bottom: 10pt;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+    }
+    .badge-firm-header {
+      font-size: 8pt;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+      color: #B68D40;
+      background: #FAF8F5;
+      border: 1px solid #D1C2A5;
+      padding: 2px 8px;
+      border-radius: 3px;
+      display: inline-block;
+      margin-bottom: 3pt;
+    }
+    .report-meta {
+      text-align: right;
+      font-size: 7.5pt;
+      color: #555555;
+    }
+
+    /* Executive Scorecard */
+    .hero-strip {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 6pt;
+      margin-bottom: 10pt;
+      background: #FAF9F6;
+      border: 1px solid #E5DFD5;
+      border-radius: 4px;
+      padding: 8pt;
+    }
+    .hero-stat {
+      border-right: 1px solid #E5DFD5;
+      padding-right: 5pt;
+    }
+    .hero-stat:last-child { border-right: none; }
+    .hero-label {
+      font-size: 6.8pt;
+      text-transform: uppercase;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      color: #666666;
+      margin-bottom: 2pt;
+    }
+    .hero-val {
+      font-size: 15pt;
+      font-weight: 800;
+      color: #111111;
+      line-height: 1.1;
+    }
+    .hero-val.danger { color: #A61C1C; }
+    .hero-val.gold { color: #8A6418; }
+    .hero-sub {
+      font-size: 6.8pt;
+      color: #777777;
+      margin-top: 2pt;
+    }
+
+    /* Tables */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 7.8pt;
+      margin-bottom: 8pt;
+    }
+    th, td {
+      padding: 4pt 5pt;
+      text-align: left;
+      border-bottom: 1px solid #EAE6DF;
+    }
+    th {
+      background: #F4F1EA;
+      font-weight: 700;
+      color: #222222;
+      text-transform: uppercase;
+      font-size: 6.8pt;
+      letter-spacing: 0.5px;
+      border-top: 1px solid #DDD7CD;
+      border-bottom: 1.5px solid #DDD7CD;
+    }
+    tr:nth-child(even) td { background: #FCFBF9; }
+    .text-right { text-align: right; }
+    .text-center { text-align: center; }
+
+    /* Badges */
+    .badge {
+      display: inline-block;
+      font-size: 6.2pt;
+      font-weight: 700;
+      padding: 1px 4px;
+      border-radius: 3px;
+      text-transform: uppercase;
+    }
+    .badge-hard { background: #FDE8E8; color: #9B1C1C; border: 1px solid #F8B4B4; }
+    .badge-soft { background: #FEF08A; color: #854D0E; border: 1px solid #FDE047; }
+    .badge-slash { background: #FFEDD5; color: #9A3412; border: 1px solid #FDBA74; }
+    .badge-firm { background: #EFF6FF; color: #1E40AF; border: 1px solid #BFDBFE; }
+
+    /* Page Breaks */
+    .page-break { page-break-before: always; }
+    .avoid-break { page-break-inside: avoid; }
+
+    /* Sensitivity Matrix */
+    .heatmap-table th, .heatmap-table td {
+      padding: 3pt 3pt;
+      font-size: 6.8pt;
+      text-align: center;
+    }
+    .cell-sweet {
+      font-weight: 800;
+      border: 1.5px solid #065F46 !important;
+      background: #D1FAE5 !important;
+      color: #065F46 !important;
+    }
+
+    .alert-box {
+      background: #FFF5F5;
+      border-left: 3px solid #E02424;
+      padding: 5pt 7pt;
+      font-size: 7.2pt;
+      color: #771D1D;
+      margin-bottom: 8pt;
+      border-radius: 0 4px 4px 0;
+    }
+    .alert-box strong { font-weight: 800; }
+
+    .killer-chip {
+      background: #F9FAFB;
+      border: 1px solid #E5E7EB;
+      border-radius: 3px;
+      padding: 2.5pt 5pt;
+      margin-bottom: 2.5pt;
+      display: flex;
+      justify-content: space-between;
+      font-size: 7.2pt;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- =========================================================
+       PAGE 1: TEST FIRM EXECUTIVE OVERVIEW & WIN / PASS RATES
+       ========================================================= -->
+  <div class="header-banner">
+    <div>
+      <div class="badge-firm-header">OFFICIAL AUDIT SPECIFICATION · SYNTHETIC APEX CHALLENGE</div>
+      <h1>TEST FIRM: The Ultimate Worst-Case Prop Firm</h1>
+      <p style="font-size: 8pt; color: #555; margin-top: 2pt;">
+        Full Synthesis of the Strictest Rules across <strong>Instant Funding, 1-Step, 2-Step, Big Accounts & Operational Policies</strong>
+      </p>
+    </div>
+    <div class="report-meta">
+      <div><strong>Synthetic Entity:</strong> TEST FIRM</div>
+      <div><strong>Monte Carlo Engine:</strong> 10,000 Paths / 50 Trades</div>
+      <div><strong>Benchmark Account:</strong> $50,000 Balance</div>
+    </div>
+  </div>
+
+  <div class="alert-box">
+    <strong>EXECUTIVE VERDICT:</strong> <strong>TEST FIRM</strong> synthesizes the most severe, capital-destructive constraints from <strong>FundingPips, FundedSquad, Pipstone Capital, FundedNext, and The Funded Room</strong>. Combining a 2% daily loss limit, 4% live trailing drawdown, -1% floating intraday liquidation, sub-60s nuclear split slashes (20%), mandatory stop loss profit forfeitures, and 15-minute directional locks yields a true end-to-end passing rate of <strong>0.00%</strong> with an Effective Retained Split of only <strong>20%</strong>.
+  </div>
+
+  <!-- Primary Scorecard -->
+  <div class="hero-strip avoid-break">
+    <div class="hero-stat">
+      <div class="hero-label">TEST FIRM Passing Rate</div>
+      <div class="hero-val danger">0.00%</div>
+      <div class="hero-sub">10,000-Path Monte Carlo (Grade: F)</div>
+    </div>
+    <div class="hero-stat">
+      <div class="hero-label">Effective Retained Split</div>
+      <div class="hero-val gold">20%</div>
+      <div class="hero-sub">FundedSquad Free Retry Downgrade (50% split)</div>
+    </div>
+    <div class="hero-stat">
+      <div class="hero-label">Break-Even Win Rate</div>
+      <div class="hero-val">40%</div>
+      <div class="hero-sub">At 1.5:1 Avg R:R (Edge: +10%)</div>
+    </div>
+    <div class="hero-stat">
+      <div class="hero-label">Consecutive Losses to Breach</div>
+      <div class="hero-val danger">3 Daily / 4 Max</div>
+      <div class="hero-sub">At 1.0% Risk / Trade ($50K Account)</div>
+    </div>
+  </div>
+
+  <!-- SECTION 1: WIN RATE vs. PASSING RATE AUDIT -->
+  <h2>1. Win Rate vs. Passing Rate Multi-Scenario Audit (TEST FIRM)</h2>
+  <p style="font-size: 7.5pt; color: #555; margin-bottom: 5pt;">
+    How strategy win rate, risk-to-reward ratio, and position sizing impact actual passing certainty under TEST FIRM's lethal rule stack:
+  </p>
+  <table class="avoid-break">
+    <thead>
+      <tr>
+        <th>Trader Profile & Strategy</th>
+        <th class="text-center">Win Rate %</th>
+        <th class="text-center">Avg R:R</th>
+        <th class="text-center">Break-Even WR %</th>
+        <th class="text-center">Expected EV (R)</th>
+        <th class="text-center">Pass Rate (1.0% Risk)</th>
+        <th class="text-center" style="background: #FFF3E0; color: #E65100;">Pass Rate (0.5% Risk)</th>
+        <th class="text-center" style="background: #E8F5E9; color: #1B5E20; font-weight: 800;">Pass Rate (0.25% Risk)</th>
+        <th class="text-center">Phase 1 Pass</th>
+        <th class="text-center">Funded Survival</th>
+      </tr>
+    </thead>
+    <tbody>
+      
+        <tr>
+          <td><strong>Low Win Rate (Trend Follower)</strong></td>
+          <td class="text-center" style="font-weight: 700;">40%</td>
+          <td class="text-center">2:1</td>
+          <td class="text-center" style="color: #666;">33.3%</td>
+          <td class="text-center" style="font-weight: 600; color: #047857;">0.20 R</td>
+          <td class="text-center" style="font-weight: 700; color: #A61C1C;">0.0%</td>
+          <td class="text-center" style="font-weight: 700; background: #FFF8E1; color: #B78103;">4.4%</td>
+          <td class="text-center" style="font-weight: 800; background: #F1F8E9; color: #1B5E20;">7.2%</td>
+          <td class="text-center">8.3%</td>
+          <td class="text-center">53.6%</td>
+        </tr>
+      
+        <tr>
+          <td><strong>Baseline Breakeven Margin</strong></td>
+          <td class="text-center" style="font-weight: 700;">45%</td>
+          <td class="text-center">1.5:1</td>
+          <td class="text-center" style="color: #666;">40.0%</td>
+          <td class="text-center" style="font-weight: 600; color: #047857;">0.13 R</td>
+          <td class="text-center" style="font-weight: 700; color: #A61C1C;">0.0%</td>
+          <td class="text-center" style="font-weight: 700; background: #FFF8E1; color: #B78103;">4.8%</td>
+          <td class="text-center" style="font-weight: 800; background: #F1F8E9; color: #1B5E20;">3.5%</td>
+          <td class="text-center">9.0%</td>
+          <td class="text-center">54.0%</td>
+        </tr>
+      
+        <tr>
+          <td><strong>Solid Discretionary Trader</strong></td>
+          <td class="text-center" style="font-weight: 700;">50%</td>
+          <td class="text-center">1.5:1</td>
+          <td class="text-center" style="color: #666;">40.0%</td>
+          <td class="text-center" style="font-weight: 600; color: #047857;">0.25 R</td>
+          <td class="text-center" style="font-weight: 700; color: #A61C1C;">0.0%</td>
+          <td class="text-center" style="font-weight: 700; background: #FFF8E1; color: #B78103;">11.8%</td>
+          <td class="text-center" style="font-weight: 800; background: #F1F8E9; color: #1B5E20;">10.5%</td>
+          <td class="text-center">15.3%</td>
+          <td class="text-center">77.1%</td>
+        </tr>
+      
+        <tr>
+          <td><strong>High Edge Day Trader</strong></td>
+          <td class="text-center" style="font-weight: 700;">55%</td>
+          <td class="text-center">1.5:1</td>
+          <td class="text-center" style="color: #666;">40.0%</td>
+          <td class="text-center" style="font-weight: 600; color: #047857;">0.38 R</td>
+          <td class="text-center" style="font-weight: 700; color: #A61C1C;">0.0%</td>
+          <td class="text-center" style="font-weight: 700; background: #FFF8E1; color: #B78103;">21.5%</td>
+          <td class="text-center" style="font-weight: 800; background: #F1F8E9; color: #1B5E20;">21.0%</td>
+          <td class="text-center">23.4%</td>
+          <td class="text-center">91.8%</td>
+        </tr>
+      
+        <tr>
+          <td><strong>Elite Institutional Scalper</strong></td>
+          <td class="text-center" style="font-weight: 700;">60%</td>
+          <td class="text-center">1.2:1</td>
+          <td class="text-center" style="color: #666;">45.5%</td>
+          <td class="text-center" style="font-weight: 600; color: #047857;">0.32 R</td>
+          <td class="text-center" style="font-weight: 700; color: #A61C1C;">0.0%</td>
+          <td class="text-center" style="font-weight: 700; background: #FFF8E1; color: #B78103;">24.1%</td>
+          <td class="text-center" style="font-weight: 800; background: #F1F8E9; color: #1B5E20;">16.5%</td>
+          <td class="text-center">25.5%</td>
+          <td class="text-center">94.3%</td>
+        </tr>
+      
+        <tr>
+          <td><strong>Hyper-Accurate Mean Reversion</strong></td>
+          <td class="text-center" style="font-weight: 700;">65%</td>
+          <td class="text-center">1:1</td>
+          <td class="text-center" style="color: #666;">50.0%</td>
+          <td class="text-center" style="font-weight: 600; color: #047857;">0.30 R</td>
+          <td class="text-center" style="font-weight: 700; color: #A61C1C;">0.0%</td>
+          <td class="text-center" style="font-weight: 700; background: #FFF8E1; color: #B78103;">28.2%</td>
+          <td class="text-center" style="font-weight: 800; background: #F1F8E9; color: #1B5E20;">15.1%</td>
+          <td class="text-center">29.2%</td>
+          <td class="text-center">96.5%</td>
+        </tr>
+      
+    </tbody>
+  </table>
+
+  <!-- SECTION 2: 5x5 SENSITIVITY HEATMAP -->
+  <h3>TEST FIRM 5×5 Sensitivity Grid: Strategy Win Rate % vs. Risk Per Trade %</h3>
+  <table class="heatmap-table avoid-break" style="margin-bottom: 8pt;">
+    <thead>
+      <tr>
+        <th style="text-align: left;">Strategy Win Rate</th>
+        <th>Risk 0.25%</th><th>Risk 0.50%</th><th>Risk 1.00%</th><th>Risk 1.50%</th><th>Risk 2.00%</th>
+      </tr>
+    </thead>
+    <tbody>
+      
+        <tr>
+          <td style="text-align: left; font-weight: 700;">WR 40%</td>
+          <td style="background: #D1FAE5; color: #065F46; font-weight: 800; border: 1.5px solid #065F46;">
+              0.1%
+              <br><span style="font-size: 5pt; text-transform: uppercase;">SWEET SPOT</span>
+            </td><td style="background: #FEE2E2; color: #991B1B; ">
+              0.1%
+              
+            </td><td style="background: #FEE2E2; color: #991B1B; ">
+              0.1%
+              
+            </td><td style="background: #FEE2E2; color: #991B1B; ">
+              0.1%
+              
+            </td><td style="background: #FEE2E2; color: #991B1B; ">
+              0.1%
+              
+            </td>
+        </tr>
+      
+        <tr>
+          <td style="text-align: left; font-weight: 700;">WR 45%</td>
+          <td style="background: #FEE2E2; color: #991B1B; ">
+              0.1%
+              
+            </td><td style="background: #FEE2E2; color: #991B1B; ">
+              0.1%
+              
+            </td><td style="background: #FEE2E2; color: #991B1B; ">
+              0.1%
+              
+            </td><td style="background: #FEE2E2; color: #991B1B; ">
+              0.1%
+              
+            </td><td style="background: #FEE2E2; color: #991B1B; ">
+              0.1%
+              
+            </td>
+        </tr>
+      
+        <tr>
+          <td style="text-align: left; font-weight: 700;">WR 50%</td>
+          <td style="background: #FEE2E2; color: #991B1B; ">
+              0.1%
+              
+            </td><td style="background: #FEE2E2; color: #991B1B; ">
+              0.1%
+              
+            </td><td style="background: #FEE2E2; color: #991B1B; ">
+              0.1%
+              
+            </td><td style="background: #FEE2E2; color: #991B1B; ">
+              0.1%
+              
+            </td><td style="background: #FEE2E2; color: #991B1B; ">
+              0.1%
+              
+            </td>
+        </tr>
+      
+        <tr>
+          <td style="text-align: left; font-weight: 700;">WR 55%</td>
+          <td style="background: #FEE2E2; color: #991B1B; ">
+              0.1%
+              
+            </td><td style="background: #FEE2E2; color: #991B1B; ">
+              0.1%
+              
+            </td><td style="background: #FEE2E2; color: #991B1B; ">
+              0.1%
+              
+            </td><td style="background: #FEE2E2; color: #991B1B; ">
+              0.1%
+              
+            </td><td style="background: #FEE2E2; color: #991B1B; ">
+              0.1%
+              
+            </td>
+        </tr>
+      
+        <tr>
+          <td style="text-align: left; font-weight: 700;">WR 60%</td>
+          <td style="background: #FEE2E2; color: #991B1B; ">
+              0.1%
+              
+            </td><td style="background: #FEE2E2; color: #991B1B; ">
+              0.1%
+              
+            </td><td style="background: #FEE2E2; color: #991B1B; ">
+              0.1%
+              
+            </td><td style="background: #FEE2E2; color: #991B1B; ">
+              0.1%
+              
+            </td><td style="background: #FEE2E2; color: #991B1B; ">
+              0.1%
+              
+            </td>
+        </tr>
+      
+    </tbody>
+  </table>
+
+  <!-- SECTION 3: PASSING RATES ACROSS ACCOUNT SIZES -->
+  <h3>Passing Rate & Dollar Thresholds Across Account Sizes ($5K to $200K)</h3>
+  <table class="avoid-break" style="margin-bottom: 8pt;">
+    <thead>
+      <tr>
+        <th>Account Size</th>
+        <th class="text-center">Monte Carlo Pass Rate</th>
+        <th class="text-center">Analytical Certainty</th>
+        <th class="text-right">Daily Loss Dollar Limit</th>
+        <th class="text-right">Max Trailing DD Dollar</th>
+        <th class="text-right">Floating Risk Cap Dollar</th>
+      </tr>
+    </thead>
+    <tbody>
+      
+        <tr>
+          <td><strong>$5K Challenge</strong></td>
+          <td class="text-center" style="font-weight: 700; color: #A61C1C;">0.0%</td>
+          <td class="text-center">0.1%</td>
+          <td class="text-right" style="color: #A61C1C; font-weight: 600;">-$150</td>
+          <td class="text-right" style="color: #A61C1C; font-weight: 600;">-$200</td>
+          <td class="text-right" style="color: #C2410C; font-weight: 600;">-$50</td>
+        </tr>
+      
+        <tr>
+          <td><strong>$10K Challenge</strong></td>
+          <td class="text-center" style="font-weight: 700; color: #A61C1C;">0.0%</td>
+          <td class="text-center">0.1%</td>
+          <td class="text-right" style="color: #A61C1C; font-weight: 600;">-$300</td>
+          <td class="text-right" style="color: #A61C1C; font-weight: 600;">-$400</td>
+          <td class="text-right" style="color: #C2410C; font-weight: 600;">-$100</td>
+        </tr>
+      
+        <tr>
+          <td><strong>$25K Challenge</strong></td>
+          <td class="text-center" style="font-weight: 700; color: #A61C1C;">0.0%</td>
+          <td class="text-center">0.1%</td>
+          <td class="text-right" style="color: #A61C1C; font-weight: 600;">-$750</td>
+          <td class="text-right" style="color: #A61C1C; font-weight: 600;">-$1,000</td>
+          <td class="text-right" style="color: #C2410C; font-weight: 600;">-$250</td>
+        </tr>
+      
+        <tr>
+          <td><strong>$50K Challenge</strong></td>
+          <td class="text-center" style="font-weight: 700; color: #A61C1C;">0.0%</td>
+          <td class="text-center">0.1%</td>
+          <td class="text-right" style="color: #A61C1C; font-weight: 600;">-$1,500</td>
+          <td class="text-right" style="color: #A61C1C; font-weight: 600;">-$2,000</td>
+          <td class="text-right" style="color: #C2410C; font-weight: 600;">-$500</td>
+        </tr>
+      
+        <tr>
+          <td><strong>$100K Challenge</strong></td>
+          <td class="text-center" style="font-weight: 700; color: #A61C1C;">0.0%</td>
+          <td class="text-center">0.1%</td>
+          <td class="text-right" style="color: #A61C1C; font-weight: 600;">-$3,000</td>
+          <td class="text-right" style="color: #A61C1C; font-weight: 600;">-$4,000</td>
+          <td class="text-right" style="color: #C2410C; font-weight: 600;">-$1,000</td>
+        </tr>
+      
+        <tr>
+          <td><strong>$200K Challenge</strong></td>
+          <td class="text-center" style="font-weight: 700; color: #A61C1C;">0.0%</td>
+          <td class="text-center">0.1%</td>
+          <td class="text-right" style="color: #A61C1C; font-weight: 600;">-$6,000</td>
+          <td class="text-right" style="color: #A61C1C; font-weight: 600;">-$8,000</td>
+          <td class="text-right" style="color: #C2410C; font-weight: 600;">-$2,000</td>
+        </tr>
+      
+    </tbody>
+  </table>
+
+  <!-- Failure Root Causes & True Costs -->
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8pt; margin-bottom: 8pt;" class="avoid-break">
+    <div style="background: #FAFAFA; border: 1px solid #E5E5E5; border-radius: 4px; padding: 6pt;">
+      <h3 style="font-size: 7.8pt; text-transform: uppercase; color: #444; border-bottom: 1px solid #DDD; padding-bottom: 2pt; margin-top: 0;">
+        Monte Carlo Failure Attribution (Why Traders Fail)
+      </h3>
+      <table style="margin-bottom: 0;">
+        <tbody>
+          <tr>
+            <td>Intraday Daily Loss Breach (2-3% Floor):</td>
+            <td class="text-right" style="font-weight: 700; color: #A61C1C;">0%</td>
+          </tr>
+          <tr>
+            <td>Max Drawdown Breach (4% Live Trailing):</td>
+            <td class="text-right" style="font-weight: 700; color: #A61C1C;">undefined%</td>
+          </tr>
+          <tr>
+            <td>Intraday Floating Risk Excursion (-1% Cap):</td>
+            <td class="text-right" style="font-weight: 700; color: #C2410C;">9896%</td>
+          </tr>
+          <tr>
+            <td>Consistency Dilution / Locking:</td>
+            <td class="text-right" style="font-weight: 700;">undefined%</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div style="background: #FAFAFA; border: 1px solid #E5E5E5; border-radius: 4px; padding: 6pt;">
+      <h3 style="font-size: 7.8pt; text-transform: uppercase; color: #444; border-bottom: 1px solid #DDD; padding-bottom: 2pt; margin-top: 0;">
+        Economic Leakage & True Cost to Funded
+      </h3>
+      <table style="margin-bottom: 0;">
+        <tbody>
+          <tr>
+            <td>Expected Statistical Attempts:</td>
+            <td class="text-right" style="font-weight: 700;">1000 attempts</td>
+          </tr>
+          <tr>
+            <td>True Capital Outlay Required:</td>
+            <td class="text-right" style="font-weight: 700; color: #A61C1C;">$2,90,000</td>
+          </tr>
+          <tr>
+            <td>Break-Even Payout Cycles:</td>
+            <td class="text-right" style="font-weight: 700;">725 cycles</td>
+          </tr>
+          <tr>
+            <td>Projected 6-Month Median Net PnL:</td>
+            <td class="text-right" style="font-weight: 700; color: #B91C1C;">
+              $-2,87,600 (-99172%)
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- =========================================================
+       PAGE 2: COMPLETE INVENTORY OF ALL RULES IN TEST FIRM
+       ========================================================= -->
+  <div class="page-break"></div>
+  <div class="header-banner">
+    <div>
+      <div class="badge-firm-header">TEST FIRM RULEBOOK · FULL ENUMERATION</div>
+      <h1>TEST FIRM: Master Rule Inventory (14 Binding Rules)</h1>
+    </div>
+    <div class="report-meta">
+      <div>Combined from 5 Prop Firms & 6 Model Lanes</div>
+    </div>
+  </div>
+
+  <p style="font-size: 7.5pt; color: #555; margin-bottom: 6pt;">
+    Every single active rule in <strong>TEST FIRM</strong> is listed below, classified by category with originating firm provenance, exact operational thresholds, breach severity, and mathematical impact multiplier.
+  </p>
+
+  <table>
+    <thead>
+      <tr>
+        <th style="width: 18%;">Category Bucket</th>
+        <th style="width: 38%;">Rule Title & Operational Mechanics</th>
+        <th style="width: 15%;">Originating Firm</th>
+        <th style="width: 15%;">Breach Penalty</th>
+        <th class="text-right" style="width: 14%;">Hazard Multiplier</th>
+      </tr>
+    </thead>
+    <tbody>
+      
+        <tr>
+          <td style="font-size: 7pt; font-weight: 600; color: #444;">TARGETS DD</td>
+          <td>
+            <strong>Daily Loss Limit: 3% (Higher of Open Bal / Equity)</strong><br>
+            <span style="font-size: 6.8pt; color: #666;">Threshold: 3% Daily Loss calculated against higher of start-of-day balance or equity</span><br>
+            <span style="font-size: 6.5pt; color: #888;">Daily loss recalculates upward if equity is higher than balance at server rollover (00:00 UTC).</span>
+          </td>
+          <td>
+            <span class="badge badge-firm">FundingPips</span><br>
+            <span style="font-size: 6.2pt; color: #666;">FundingPips Zero</span>
+          </td>
+          <td>
+            <span class="badge badge-hard">
+              Hard Breach
+            </span>
+          </td>
+          <td class="text-right" style="font-weight: 700; color: #B45309;">
+            0.74x
+          </td>
+        </tr>
+      
+        <tr>
+          <td style="font-size: 7pt; font-weight: 600; color: #444;">TARGETS DD</td>
+          <td>
+            <strong>Ultra-Tight 4% Max Drawdown &amp; $20K Capital Cap</strong><br>
+            <span style="font-size: 6.8pt; color: #666;">Threshold: Max 4% Total Drawdown limit; account sizes capped at $20K maximum; 70% split</span><br>
+            <span style="font-size: 6.5pt; color: #888;">Leaves a razor-thin 4% total error buffer for the lifetime of the account.</span>
+          </td>
+          <td>
+            <span class="badge badge-firm">Pipstone Capital</span><br>
+            <span style="font-size: 6.2pt; color: #666;">Instant Funding Pro</span>
+          </td>
+          <td>
+            <span class="badge badge-hard">
+              Hard Breach
+            </span>
+          </td>
+          <td class="text-right" style="font-weight: 700; color: #991B1B;">
+            0.58x
+          </td>
+        </tr>
+      
+        <tr>
+          <td style="font-size: 7pt; font-weight: 600; color: #444;">INTRADAY FLOATING</td>
+          <td>
+            <strong>Floating Risk Cap: -1% Hard Breach (Instant Liquidation)</strong><br>
+            <span style="font-size: 6.8pt; color: #666;">Threshold: -1.0% maximum open unrealized drawdown at any split second = Immediate Hard Breach</span><br>
+            <span style="font-size: 6.5pt; color: #888;">If open equity drops 1.00% below starting balance/equity, the account is terminated instantly on the 1st strike.</span>
+          </td>
+          <td>
+            <span class="badge badge-firm">FundingPips</span><br>
+            <span style="font-size: 6.2pt; color: #666;">FundingPips Zero</span>
+          </td>
+          <td>
+            <span class="badge badge-hard">
+              Hard Breach
+            </span>
+          </td>
+          <td class="text-right" style="font-weight: 700; color: #991B1B;">
+            0.52x
+          </td>
+        </tr>
+      
+        <tr>
+          <td style="font-size: 7pt; font-weight: 600; color: #444;">EXECUTION NEWS</td>
+          <td>
+            <strong>4 Orders in 3 Min Pyramiding Breach &amp; 10% Sub-1-Min Ratio Blocker</strong><br>
+            <span style="font-size: 6.8pt; color: #666;">Threshold: 4 orders in 3 minutes = HFT Hard Breach (2nd violation = permanent ban); &lt;1m trades must be ≤10% total</span><br>
+            <span style="font-size: 6.5pt; color: #888;">Pyramiding fast entries breaches HFT rules. Sub-1-minute trades lock payouts until diluted with extra trades.</span>
+          </td>
+          <td>
+            <span class="badge badge-firm">The Funded Room</span><br>
+            <span style="font-size: 6.2pt; color: #666;">Instant Funding</span>
+          </td>
+          <td>
+            <span class="badge badge-hard">
+              Hard Breach
+            </span>
+          </td>
+          <td class="text-right" style="font-weight: 700; color: #B45309;">
+            0.74x
+          </td>
+        </tr>
+      
+        <tr>
+          <td style="font-size: 7pt; font-weight: 600; color: #444;">CONSISTENCY BUFFER</td>
+          <td>
+            <strong>15% Single Day Profit Consistency Score Cap</strong><br>
+            <span style="font-size: 6.8pt; color: #666;">Threshold: No single day's profit can exceed 15% of total realized profit</span><br>
+            <span style="font-size: 6.5pt; color: #888;">Forces a minimum of ~7 heavily distributed winning days before eligibility for withdrawal.</span>
+          </td>
+          <td>
+            <span class="badge badge-firm">FundingPips</span><br>
+            <span style="font-size: 6.2pt; color: #666;">FundingPips Zero</span>
+          </td>
+          <td>
+            <span class="badge badge-soft">
+              Profit Forfeited
+            </span>
+          </td>
+          <td class="text-right" style="font-weight: 700; color: #991B1B;">
+            0.58x
+          </td>
+        </tr>
+      
+        <tr>
+          <td style="font-size: 7pt; font-weight: 600; color: #444;">CONSISTENCY BUFFER</td>
+          <td>
+            <strong>5 Profitable Days (≥0.5% Above High-Watermark, Resets to 0 Post-Payout)</strong><br>
+            <span style="font-size: 6.8pt; color: #666;">Threshold: Must log 5 days making ≥0.5% above the highest-ever previous balance; all 5 days reset to 0 after each payout</span><br>
+            <span style="font-size: 6.5pt; color: #888;">Extreme consistency trap: after every payout, you must make 5 new days each exceeding the previous all-time peak balance by 0.5%.</span>
+          </td>
+          <td>
+            <span class="badge badge-firm">Pipstone Capital</span><br>
+            <span style="font-size: 6.2pt; color: #666;">Instant Funding Standard</span>
+          </td>
+          <td>
+            <span class="badge badge-hard">
+              Hard Breach
+            </span>
+          </td>
+          <td class="text-right" style="font-weight: 700; color: #B45309;">
+            0.68x
+          </td>
+        </tr>
+      
+        <tr>
+          <td style="font-size: 7pt; font-weight: 600; color: #444;">EXECUTION NEWS</td>
+          <td>
+            <strong>News &amp; Weekend Hard Breach (10m Window)</strong><br>
+            <span style="font-size: 6.8pt; color: #666;">Threshold: Hard Breach if holding open trades 10 min before/after high-impact red-folder news or over weekends</span><br>
+            <span style="font-size: 6.5pt; color: #888;">Strict 10-minute news buffer. Weekend holding is completely disabled; open trades trigger auto-liquidation.</span>
+          </td>
+          <td>
+            <span class="badge badge-firm">FundingPips</span><br>
+            <span style="font-size: 6.2pt; color: #666;">FundingPips Zero</span>
+          </td>
+          <td>
+            <span class="badge badge-hard">
+              Hard Breach
+            </span>
+          </td>
+          <td class="text-right" style="font-weight: 700; color: #B45309;">
+            0.76x
+          </td>
+        </tr>
+      
+        <tr>
+          <td style="font-size: 7pt; font-weight: 600; color: #444;">TARGETS DD</td>
+          <td>
+            <strong>Instant Free Retry Downgrade Trap (1.5% DL, 3% Trailing DD, 50% Split)</strong><br>
+            <span style="font-size: 6.8pt; color: #666;">Threshold: Free retry account drops to 1.5% daily loss, 3% trailing max loss, 4% target, 6 days, and 50% split (40% after 1st 1% float breach)</span><br>
+            <span style="font-size: 6.5pt; color: #888;">Free retry turns the account into an extreme trap: 1.5% daily loss, 3% trailing drawdown, and profit split reduced to 50% (or 40%).</span>
+          </td>
+          <td>
+            <span class="badge badge-firm">FundedSquad</span><br>
+            <span style="font-size: 6.2pt; color: #666;">Instant Retry Policy</span>
+          </td>
+          <td>
+            <span class="badge badge-hard">
+              Hard Breach
+            </span>
+          </td>
+          <td class="text-right" style="font-weight: 700; color: #991B1B;">
+            0.52x
+          </td>
+        </tr>
+      
+        <tr>
+          <td style="font-size: 7pt; font-weight: 600; color: #444;">PAYOUT FEES</td>
+          <td>
+            <strong>Stellar Instant Split &amp; Lock (70% Tiers 1–2 → 80% Cap Tier 3+)</strong><br>
+            <span style="font-size: 6.8pt; color: #666;">Threshold: 70% split (Tiers 1–2) → 80% cap (Tier 3+); min 1% cycle growth required; trading before transferring after EOD 5% disables payout until next EOD; 3 purchase attempts max</span><br>
+            <span style="font-size: 6.5pt; color: #888;">Starts at 70% split capped at 80%. Requires 1% minimum cycle growth; trading before transferring after reaching 5% locks payouts.</span>
+          </td>
+          <td>
+            <span class="badge badge-firm">FundedNext</span><br>
+            <span style="font-size: 6.2pt; color: #666;">Stellar Instant</span>
+          </td>
+          <td>
+            <span class="badge badge-hard">
+              Hard Breach
+            </span>
+          </td>
+          <td class="text-right" style="font-weight: 700; color: #B45309;">
+            0.78x
+          </td>
+        </tr>
+      
+        <tr>
+          <td style="font-size: 7pt; font-weight: 600; color: #444;">EXECUTION NEWS</td>
+          <td>
+            <strong>Nuclear &lt;60s Hold Penalty (20% Split + Account Closure) + 15m Reversal Lock</strong><br>
+            <span style="font-size: 6.8pt; color: #666;">Threshold: 1st &lt;60s trade = profit split slashed to 20% &amp; account terminated; 15-min cooldown after losing trade</span><br>
+            <span style="font-size: 6.5pt; color: #888;">November 2026 enforcement policy: any closed trade under 60 seconds slashes split to 20% and closes account. Reversing position on same asset within 15m is prohibited.</span>
+          </td>
+          <td>
+            <span class="badge badge-firm">Pipstone Capital</span><br>
+            <span style="font-size: 6.2pt; color: #666;">Instant Funding Standard &amp; Pro</span>
+          </td>
+          <td>
+            <span class="badge badge-hard">
+              Hard Breach
+            </span>
+          </td>
+          <td class="text-right" style="font-weight: 700; color: #B45309;">
+            0.70x
+          </td>
+        </tr>
+      
+        <tr>
+          <td style="font-size: 7pt; font-weight: 600; color: #444;">TARGETS DD</td>
+          <td>
+            <strong>Target: 5% | Daily Loss: 1% Hard Breach | Max Loss: 3% EOD Trailing</strong><br>
+            <span style="font-size: 6.8pt; color: #666;">Threshold: 5% Target; 1% Daily Loss Hard Breach; 3% EOD Trailing DD (locks at BE at +3%); $100K only</span><br>
+            <span style="font-size: 6.5pt; color: #888;">The most extreme daily loss limit in the industry: a 1% drawdown on any single day instantly breaches the account.</span>
+          </td>
+          <td>
+            <span class="badge badge-firm">FundingPips</span><br>
+            <span style="font-size: 6.2pt; color: #666;">1 Step Labs</span>
+          </td>
+          <td>
+            <span class="badge badge-hard">
+              Hard Breach
+            </span>
+          </td>
+          <td class="text-right" style="font-weight: 700; color: #991B1B;">
+            0.32x
+          </td>
+        </tr>
+      
+        <tr>
+          <td style="font-size: 7pt; font-weight: 600; color: #444;">BIG THROTTLES</td>
+          <td>
+            <strong>Severe Non-Linear Hard Lot Caps ($200K: 8.0 FX / 4.0 Gold)</strong><br>
+            <span style="font-size: 6.8pt; color: #666;">Threshold: $100K: 6.0 FX / 2.5 Gold; $200K: 8.0 FX / 4.0 Gold (Instant $200K: 4.0 FX / 2.2 Gold)</span><br>
+            <span style="font-size: 6.5pt; color: #888;">On a $200K account, trading just 4.0 lots on Gold represents a tiny fraction of typical sizing, bottlenecking profit velocity while full risk remains.</span>
+          </td>
+          <td>
+            <span class="badge badge-firm">FundedSquad</span><br>
+            <span style="font-size: 6.2pt; color: #666;">Big Accounts Architecture</span>
+          </td>
+          <td>
+            <span class="badge badge-hard">
+              Hard Breach
+            </span>
+          </td>
+          <td class="text-right" style="font-weight: 700; color: #B45309;">
+            0.70x
+          </td>
+        </tr>
+      
+        <tr>
+          <td style="font-size: 7pt; font-weight: 600; color: #444;">BIG THROTTLES</td>
+          <td>
+            <strong>$100K Max Single Account Ceiling (No $200K Tier Available)</strong><br>
+            <span style="font-size: 6.8pt; color: #666;">Threshold: Firm does not offer any single account above $100K; flat 80% profit split cap even after scaling</span><br>
+            <span style="font-size: 6.5pt; color: #888;">T&amp;C Section 18a caps profit split at 80% permanently even after multiple scaling milestones.</span>
+          </td>
+          <td>
+            <span class="badge badge-firm">The Funded Room</span><br>
+            <span style="font-size: 6.2pt; color: #666;">Big Accounts Architecture</span>
+          </td>
+          <td>
+            <span class="badge badge-hard">
+              Hard Breach
+            </span>
+          </td>
+          <td class="text-right" style="font-weight: 700; color: #1F2937;">
+            0.82x
+          </td>
+        </tr>
+      
+        <tr>
+          <td style="font-size: 7pt; font-weight: 600; color: #444;">PAYOUT FEES</td>
+          <td>
+            <strong>21-Day Inactivity Clock Starts on Purchase Date (Not 1st Trade)</strong><br>
+            <span style="font-size: 6.8pt; color: #666;">Threshold: Account expires if 1st trade is not placed within 21 days of purchase date</span><br>
+            <span style="font-size: 6.5pt; color: #888;">Clock starts immediately when you pay for the challenge, not when credentials are first logged into.</span>
+          </td>
+          <td>
+            <span class="badge badge-firm">FundedSquad</span><br>
+            <span style="font-size: 6.2pt; color: #666;">Universal Policy</span>
+          </td>
+          <td>
+            <span class="badge badge-hard">
+              Hard Breach
+            </span>
+          </td>
+          <td class="text-right" style="font-weight: 700; color: #1F2937;">
+            0.94x
+          </td>
+        </tr>
+      
+    </tbody>
+  </table>
+
+  <!-- Deadliest Rule Killers in TEST FIRM -->
+  <h3 style="margin-top: 8pt;">Top 5 Deadliest Rule Killers in TEST FIRM (Marginal Impact Ranking)</h3>
+  <div class="avoid-break">
+    
+      <div class="killer-chip">
+        <div>
+          <strong>#1: Target: 5% | Daily Loss: 1% Hard Breach | Max Loss: 3% EOD Trailing</strong> (FundingPips)
+        </div>
+        <div style="font-weight: 700; color: #047857;">
+          Disabling this rule gains: +0.00% Absolute (0% Relative Pass Certainty)
+        </div>
+      </div>
+    
+      <div class="killer-chip">
+        <div>
+          <strong>#2: Floating Risk Cap: -1% Hard Breach (Instant Liquidation)</strong> (FundingPips)
+        </div>
+        <div style="font-weight: 700; color: #047857;">
+          Disabling this rule gains: +0.00% Absolute (0% Relative Pass Certainty)
+        </div>
+      </div>
+    
+      <div class="killer-chip">
+        <div>
+          <strong>#3: Instant Free Retry Downgrade Trap (1.5% DL, 3% Trailing DD, 50% Split)</strong> (FundedSquad)
+        </div>
+        <div style="font-weight: 700; color: #047857;">
+          Disabling this rule gains: +0.00% Absolute (0% Relative Pass Certainty)
+        </div>
+      </div>
+    
+      <div class="killer-chip">
+        <div>
+          <strong>#4: Ultra-Tight 4% Max Drawdown &amp; $20K Capital Cap</strong> (Pipstone Capital)
+        </div>
+        <div style="font-weight: 700; color: #047857;">
+          Disabling this rule gains: +0.00% Absolute (0% Relative Pass Certainty)
+        </div>
+      </div>
+    
+      <div class="killer-chip">
+        <div>
+          <strong>#5: 15% Single Day Profit Consistency Score Cap</strong> (FundingPips)
+        </div>
+        <div style="font-weight: 700; color: #047857;">
+          Disabling this rule gains: +0.00% Absolute (0% Relative Pass Certainty)
+        </div>
+      </div>
+    
+  </div>
+
+  <!-- =========================================================
+       PAGE 3: PER-MODEL WORST-CASE BREAKDOWN & DEFENSE PROTOCOLS
+       ========================================================= -->
+  <div class="page-break"></div>
+  <div class="header-banner">
+    <div>
+      <div class="badge-firm-header">CROSS-MODEL BREAKDOWN & SURVIVAL PROTOCOL</div>
+      <h1>Module Benchmarks & Operational Defense Strategy</h1>
+    </div>
+    <div class="report-meta">
+      <div>Zero-Discretion Execution Protocol</div>
+    </div>
+  </div>
+
+  <h2>Model-by-Model Worst-Case Benchmark Comparison ($50,000 Base)</h2>
+  <table class="avoid-break" style="margin-bottom: 12pt;">
+    <thead>
+      <tr>
+        <th>Module Lane</th>
+        <th class="text-center">Active Worst Rules</th>
+        <th class="text-center">Monte Carlo Pass Rate</th>
+        <th class="text-center">Effective Split %</th>
+        <th class="text-center">Consecutive Losses to Daily Breach</th>
+        <th class="text-center">Consecutive Losses to Max DD Breach</th>
+      </tr>
+    </thead>
+    <tbody>
+      
+        <tr>
+          <td><strong>Instant Funding (Direct-to-Funded)</strong></td>
+          <td class="text-center">23 rules</td>
+          <td class="text-center" style="font-weight: 700; color: #A61C1C;">0.0%</td>
+          <td class="text-center" style="font-weight: 700; color: #8A6418;">10%</td>
+          <td class="text-center" style="color: #A61C1C; font-weight: 600;">3 trades</td>
+          <td class="text-center" style="color: #A61C1C; font-weight: 600;">4 trades</td>
+        </tr>
+      
+        <tr>
+          <td><strong>1-Step Standard / Flex</strong></td>
+          <td class="text-center">9 rules</td>
+          <td class="text-center" style="font-weight: 700; color: #047857;">32.0%</td>
+          <td class="text-center" style="font-weight: 700; color: #8A6418;">25%</td>
+          <td class="text-center" style="color: #A61C1C; font-weight: 600;">5 trades</td>
+          <td class="text-center" style="color: #A61C1C; font-weight: 600;">10 trades</td>
+        </tr>
+      
+        <tr>
+          <td><strong>1-Step Lite / Labs</strong></td>
+          <td class="text-center">4 rules</td>
+          <td class="text-center" style="font-weight: 700; color: #047857;">83.6%</td>
+          <td class="text-center" style="font-weight: 700; color: #8A6418;">40%</td>
+          <td class="text-center" style="color: #A61C1C; font-weight: 600;">5 trades</td>
+          <td class="text-center" style="color: #A61C1C; font-weight: 600;">10 trades</td>
+        </tr>
+      
+        <tr>
+          <td><strong>2-Step Standard / Flex</strong></td>
+          <td class="text-center">11 rules</td>
+          <td class="text-center" style="font-weight: 700; color: #047857;">30.1%</td>
+          <td class="text-center" style="font-weight: 700; color: #8A6418;">25%</td>
+          <td class="text-center" style="color: #A61C1C; font-weight: 600;">5 trades</td>
+          <td class="text-center" style="color: #A61C1C; font-weight: 600;">10 trades</td>
+        </tr>
+      
+        <tr>
+          <td><strong>2-Step Lite / Pro</strong></td>
+          <td class="text-center">4 rules</td>
+          <td class="text-center" style="font-weight: 700; color: #047857;">85.4%</td>
+          <td class="text-center" style="font-weight: 700; color: #8A6418;">80%</td>
+          <td class="text-center" style="color: #A61C1C; font-weight: 600;">5 trades</td>
+          <td class="text-center" style="color: #A61C1C; font-weight: 600;">10 trades</td>
+        </tr>
+      
+        <tr>
+          <td><strong>Big Accounts ($100K–$400K+)</strong></td>
+          <td class="text-center">9 rules</td>
+          <td class="text-center" style="font-weight: 700; color: #047857;">84.0%</td>
+          <td class="text-center" style="font-weight: 700; color: #8A6418;">80%</td>
+          <td class="text-center" style="color: #A61C1C; font-weight: 600;">5 trades</td>
+          <td class="text-center" style="color: #A61C1C; font-weight: 600;">10 trades</td>
+        </tr>
+      
+      <tr style="background: #FFFBEB; font-weight: 700; border-top: 2px solid #B68D40;">
+        <td><strong>TEST FIRM (ALL MODELS COMBINED)</strong></td>
+        <td class="text-center">14 rules</td>
+        <td class="text-center" style="color: #A61C1C;">0.0%</td>
+        <td class="text-center" style="color: #8A6418;">20%</td>
+        <td class="text-center" style="color: #A61C1C;">3 trades</td>
+        <td class="text-center" style="color: #A61C1C;">4 trades</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>Actionable Survival Playbook: How to Beat TEST FIRM</h2>
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10pt;" class="avoid-break">
+    <div style="background: #FAFAF9; border: 1px solid #E2DED6; border-radius: 4px; padding: 8pt;">
+      <h3 style="color: #991B1B; margin-top: 0; font-size: 8.5pt;">1. Risk Budgeting & Sizing Invariance</h3>
+      <ul style="padding-left: 12pt; margin: 0; font-size: 7.5pt; line-height: 1.45;">
+        <li><strong>Fixed Risk at 0.50% Maximum:</strong> With a 2% Daily Loss floor, 1.0% risk leaves only 2 consecutive losses before liquidation. Capping risk at 0.50% gives 4 losses, improving pass rate from 0.0% to 11.8%.</li>
+        <li><strong>Intraday MAE Defense:</strong> Pipstone's -1.0% and Squad's -1.5% floating risk caps trigger during open drawdowns. Set hard stop losses at &lt;0.75% of capital to prevent adverse floating excursions from triggering liquidation.</li>
+        <li><strong>Dynamic Leverage Cliff (FundingPips):</strong> Never exceed 0.49 lots on Gold (XAUUSD) or Nasdaq (US100); 0.50+ lots collapses leverage instantly to 1:5, triggering instant margin call.</li>
+      </ul>
+
+      <h3 style="color: #991B1B; margin-top: 8pt; font-size: 8.5pt;">2. Execution & Holding Window Rules</h3>
+      <ul style="padding-left: 12pt; margin: 0; font-size: 7.5pt; line-height: 1.45;">
+        <li><strong>Hard 75-Second Minimum Hold:</strong> Both Pipstone and FundedSquad impose nuclear penalties on sub-60s trades (Pipstone slashes split to 20% and closes account). Never close a scalp before 75 seconds.</li>
+        <li><strong>15-Minute Reversal Freeze (Pipstone):</strong> After closing any losing trade, enter a mandatory 15-minute freeze before entering the opposite direction.</li>
+        <li><strong>Pyramiding Ceiling (The Funded Room):</strong> Never enter more than 2 orders within a 3-minute window to avoid triggering the 4-order HFT trap.</li>
+      </ul>
+    </div>
+
+    <div style="background: #FAFAF9; border: 1px solid #E2DED6; border-radius: 4px; padding: 8pt;">
+      <h3 style="color: #991B1B; margin-top: 0; font-size: 8.5pt;">3. Mandatory Fine-Print Compliance</h3>
+      <ul style="padding-left: 12pt; margin: 0; font-size: 7.5pt; line-height: 1.45;">
+        <li><strong>Mandatory Hard Stop Loss (FundedNext):</strong> Every single order must have an SL attached. Closing even one winning trade without an SL results in 100% realized profit deduction.</li>
+        <li><strong>3% Cumulative Risk Cap (FundedNext):</strong> Total risk across all open positions must never reach 3.0%. A second violation permanently downgrades the account to a 1.0% total risk ceiling.</li>
+        <li><strong>Closed-Trade Inactivity Timer:</strong> Open positions do NOT pause the 30-day inactivity clock on FundingPips. Close at least one micro trade every 21 days.</li>
+      </ul>
+
+      <h3 style="color: #991B1B; margin-top: 8pt; font-size: 8.5pt;">4. Payout Window & Split Retention</h3>
+      <ul style="padding-left: 12pt; margin: 0; font-size: 7.5pt; line-height: 1.45;">
+        <li><strong>The 12-Hour Sunday Payout Gate (The Funded Room):</strong> Set alarms for Sunday between 11:59 AM UTC and 11:59 PM UTC. Missing this 12-hour window locks withdrawals for 7 days.</li>
+        <li><strong>Asymmetric News Haircut (FundedNext):</strong> Avoid holding across high-impact red-folder news windows (5m before / 5m after). If profitable, 60% of profits are forfeited; if losing, 100% of loss is absorbed.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div style="margin-top: 12pt; border-top: 1px solid #DDD; padding-top: 6pt; font-size: 7pt; color: #777; text-align: center;">
+    TEST FIRM Comprehensive Quantitative Risk Audit · 10,000-Path Monte Carlo Engine · 5-Firm Prop Trading Terminal
+  </div>
+
+</body>
+</html>

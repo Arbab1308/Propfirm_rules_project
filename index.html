@@ -1,0 +1,883 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>5-Firm Prop Trading Modular Rule Checklist, Worst-Case Mixer & Passing Certainty Terminal</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23B68D40'><path d='M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5'/></svg>">
+</head>
+<body>
+
+  <!-- ==========================================
+       TOP STICKY CONTROL BAR
+       ========================================== -->
+  <header class="top-nav">
+    <div class="top-nav-inner">
+      <!-- Row 1: Brand & Global Actions -->
+      <div class="nav-header-row">
+        <div class="brand-block">
+          <span class="brand-badge">PROPFIRM RISK ANALYTICS</span>
+          <div>
+            <h1 class="brand-title">5-Firm Modular Rule Checklist & Passing Certainty Terminal</h1>
+            <p class="brand-subtitle">FundingPips · FundedSquad · Pipstone Capital · FundedNext · The Funded Room</p>
+          </div>
+        </div>
+
+        <div class="nav-global-actions">
+          <button id="btnOpenSandbox" class="btn btn-gold" title="Open Pre-Trade Violation Sandbox & CSV Importer">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+            Pre-Trade Sandbox & CSV Importer
+          </button>
+          <button id="btnOpenHeatmap" class="btn btn-primary" title="Compare All 6 Modules Worst-Case across all account sizes">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+            All-Modules Heatmap Matrix
+          </button>
+          <button id="btnOpenPresets" class="btn" title="Saved Scenarios & Benchmark Presets">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+            Scenarios & Presets
+          </button>
+          <button id="btnOpenCalibration" class="btn" title="Inspect & Calibrate Empirical Weights">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+            Calibrate Weights
+          </button>
+        </div>
+      </div>
+
+      <!-- Row 2: Module Switcher Tabs + Account Size Pills + Firm Filter -->
+      <div class="nav-controls-row">
+        <!-- 6 Module Lanes -->
+        <div class="module-tabs" id="moduleTabsContainer">
+          <!-- Rendered dynamically -->
+        </div>
+
+        <!-- Account Size Pills -->
+        <div class="size-selector-group">
+          <span class="selector-label">Account Size:</span>
+          <div class="size-pills" id="sizePillsContainer">
+            <button class="size-pill-btn" data-size="5000">$5K</button>
+            <button class="size-pill-btn" data-size="10000">$10K</button>
+            <button class="size-pill-btn" data-size="25000">$25K</button>
+            <button class="size-pill-btn active" data-size="50000">$50K</button>
+            <button class="size-pill-btn" data-size="100000">$100K</button>
+            <button class="size-pill-btn" data-size="200000">$200K</button>
+          </div>
+        </div>
+
+        <!-- Firm Filter Chips -->
+        <div class="firm-filter-group" id="firmFilterGroup">
+          <span class="selector-label">Firm Filter:</span>
+          <button class="firm-chip active" data-firm="all">All (5)</button>
+          <button class="firm-chip active" data-firm="fundingpips">FP</button>
+          <button class="firm-chip active" data-firm="fundedsquad">FS</button>
+          <button class="firm-chip active" data-firm="pipstone">PS</button>
+          <button class="firm-chip active" data-firm="fundednext">FN</button>
+          <button class="firm-chip active" data-firm="thefundedroom">TFR</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ==========================================
+       MAIN WORKSPACE GRID
+       ========================================== -->
+  <main class="main-workbench">
+
+    <!-- LEFT COLUMN: CHECKLIST BUILDER (58%) -->
+    <section class="checklist-column">
+
+      <!-- Active Module Header Banner -->
+      <div class="module-banner-card">
+        <div class="banner-left">
+          <div class="banner-title-row">
+            <h2 class="banner-title" id="activeModuleTitle">Instant (Direct-to-Funded)</h2>
+            <span class="badge badge-friction" id="activeModuleBadge">Direct Entry</span>
+            <span class="badge badge-superseded font-mono" id="activeModuleRulesCount">0 rules loaded</span>
+          </div>
+          <p class="banner-meta" id="activeModuleMeta">
+            Direct to funded capital. Zero evaluation hurdle, but severe attrition from trailing high-watermark drawdown & floating margin rules.
+          </p>
+        </div>
+
+        <div class="banner-actions">
+          <button id="btnAutoWorstCase" class="btn btn-crimson" title="Select the harshest constraint across all 5 firms in this module">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>
+            Auto-Select Worst Case (All 5 Firms)
+          </button>
+          <button id="btnCopyCheckedRules" class="btn" title="Copy all currently checked rules to cross-module clipboard">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            Copy Checked Rules
+          </button>
+          <button id="btnAddCustomRule" class="btn" title="Add custom rule to this module">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            + Add Rule
+          </button>
+        </div>
+      </div>
+
+      <!-- Cross-Module Paste Notification Banner -->
+      <div id="clipboardNotificationBanner" class="clipboard-notification-banner" style="display: none;">
+        <div class="clipboard-banner-text">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg>
+          <span id="clipboardBannerMsg">Clipboard contains copied rules ready to paste here.</span>
+        </div>
+        <div style="display: flex; gap: 6px;">
+          <button id="btnPasteClipboard" class="btn btn-gold btn-sm">Paste Copied Rules Here</button>
+          <button id="btnClearClipboard" class="btn btn-sm">Clear Clipboard</button>
+        </div>
+      </div>
+
+      <!-- Collapsible Universal / Operational Policies Bar -->
+      <div class="universal-policies-card">
+        <div class="universal-header" id="universalToggleHeader">
+          <div class="universal-header-left">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            <h3 class="universal-title">Universal Policies, Fine-Print & Payout Splits (Cross-Module)</h3>
+            <span class="universal-count-badge" id="universalActiveBadge">Active Across All Modules</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span class="selector-label" style="font-size: 10px;">Click to Expand/Collapse</span>
+            <svg id="universalChevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+          </div>
+        </div>
+        <div class="universal-body" id="universalRulesContainer">
+          <!-- Universal rules rendered dynamically -->
+        </div>
+      </div>
+
+      <!-- 6 Collapsible Rule Buckets -->
+      <div id="ruleBucketsContainer" style="display: flex; flex-direction: column; gap: 12px;">
+        <!-- Rendered dynamically by app.js -->
+      </div>
+
+    </section>
+
+    <!-- RIGHT COLUMN: LIVE TELEMETRY, 3-LAYER ENGINE & ANALYTICS (42% STICKY) -->
+    <aside class="telemetry-column">
+
+      <!-- TWIN HERO METRICS CARD: Passing Certainty + Expected Retained Split % -->
+      <div class="hero-telemetry-card">
+        <div class="twin-hero-grid">
+          <!-- Left Hero: End-to-End Passing Certainty -->
+          <div class="hero-column">
+            <div class="hero-header-row">
+              <span class="hero-label">Buy → 1st Payout</span>
+              <div class="risk-grade-badge" id="heroRiskGrade">GRADE B</div>
+            </div>
+            <div class="hero-metric-display">
+              <span class="hero-number" id="heroCertaintyScore">8.93</span>
+              <span class="hero-unit">%</span>
+            </div>
+            <div class="hero-grade-desc" id="heroGradeDesc">
+              Standard challenge difficulty.
+            </div>
+          </div>
+
+          <!-- Right Hero: Expected Retained Split % -->
+          <div class="hero-column" style="padding-left: 14px;">
+            <div class="hero-header-row">
+              <span class="hero-label">Retained Payout Split</span>
+              <span class="badge badge-friction font-mono" id="heroSplitStatusBadge">NOMINAL 80%</span>
+            </div>
+            <div class="hero-metric-display">
+              <span class="hero-number" id="heroRetainedSplitScore" style="color: var(--gold-dark);">80</span>
+              <span class="hero-unit">%</span>
+            </div>
+            <div class="hero-grade-desc" id="heroRetainedSplitDesc" style="color: var(--text-secondary);">
+              Nominal profit retention.
+            </div>
+          </div>
+        </div>
+
+        <!-- LAYER 1: Strategy Pre-Check Strip -->
+        <div class="metric-strip-card">
+          <div class="metric-strip-header">
+            <span>Layer 1: Strategy Analytical Pre-Check</span>
+            <span class="font-mono" id="layer1EdgeLabel" style="color: var(--forest-text);">Edge: +10.0%</span>
+          </div>
+          <div class="metric-strip-grid">
+            <div class="strip-cell">
+              <span class="strip-cell-label">Break-Even WR</span>
+              <span class="strip-cell-val" id="cellBreakEvenWR">40.0%</span>
+              <span class="strip-cell-sub">1 / (1 + RR)</span>
+            </div>
+            <div class="strip-cell">
+              <span class="strip-cell-label">Expectancy / Trade</span>
+              <span class="strip-cell-val" id="cellEvPerTrade">+0.25 R</span>
+              <span class="strip-cell-sub" id="cellEvPerTradeDollar">+$125 / trade</span>
+            </div>
+            <div class="strip-cell">
+              <span class="strip-cell-label">Losses to Daily DL</span>
+              <span class="strip-cell-val" id="cellLossesToDaily">3 Trades</span>
+              <span class="strip-cell-sub" id="cellDailyMarginSub">at 1.0% risk</span>
+            </div>
+            <div class="strip-cell">
+              <span class="strip-cell-label">Losses to Max DD</span>
+              <span class="strip-cell-val" id="cellLossesToMax">10 Trades</span>
+              <span class="strip-cell-sub" id="cellHurdleSub">Hurdle: 0.8x</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Stage Funnel Progress Gauges -->
+        <div class="stage-funnel-container">
+          <!-- Phase 1 -->
+          <div class="funnel-stage-row" id="funnelP1Row">
+            <div class="funnel-stage-labels">
+              <span class="funnel-stage-name">Phase 1 Evaluation Pass Rate</span>
+              <span class="funnel-stage-value" id="funnelP1Val">20.3%</span>
+            </div>
+            <div class="progress-track">
+              <div class="progress-bar-fill" id="funnelP1Bar" style="width: 20.3%; background: #0284C7;"></div>
+            </div>
+          </div>
+
+          <!-- Phase 2 (Auto-hidden on Instant & 1-Step) -->
+          <div class="funnel-stage-row" id="funnelP2Row" style="display: none;">
+            <div class="funnel-stage-labels">
+              <span class="funnel-stage-name">Phase 2 Evaluation Pass Rate</span>
+              <span class="funnel-stage-value" id="funnelP2Val">39.0%</span>
+            </div>
+            <div class="progress-track">
+              <div class="progress-bar-fill" id="funnelP2Bar" style="width: 39.0%; background: #6366F1;"></div>
+            </div>
+          </div>
+
+          <!-- Funded -> 1st Payout -->
+          <div class="funnel-stage-row" id="funnelFundedRow">
+            <div class="funnel-stage-labels">
+              <span class="funnel-stage-name">Funded → 1st Payout Survival</span>
+              <span class="funnel-stage-value" id="funnelFundedVal">44.0%</span>
+            </div>
+            <div class="progress-track">
+              <div class="progress-bar-fill" id="funnelFundedBar" style="width: 44.0%; background: #D97706;"></div>
+            </div>
+          </div>
+
+          <!-- Combined End-to-End -->
+          <div class="funnel-stage-row">
+            <div class="funnel-stage-labels">
+              <span class="funnel-stage-name" style="font-weight: 700; color: var(--text-primary);">Final End-to-End Buy-to-Paid</span>
+              <span class="funnel-stage-value" id="funnelEndToEndVal" style="font-weight: 700;">8.9%</span>
+            </div>
+            <div class="progress-track">
+              <div class="progress-bar-fill" id="funnelEndToEndBar" style="width: 8.9%; background: var(--text-primary);"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- LAYER 3: Economic ROI & Fine-Print Leakage Strip -->
+        <div class="metric-strip-card" style="margin-top: 12px; margin-bottom: 0;">
+          <div class="metric-strip-header">
+            <span>Layer 3: Economic ROI & Fine-Print Leakage</span>
+            <span class="font-mono" id="layer3AttemptsLabel" style="color: var(--amber-text);">11.2x Attempts</span>
+          </div>
+          <div class="metric-strip-grid">
+            <div class="strip-cell">
+              <span class="strip-cell-label">Challenge Fee</span>
+              <span class="strip-cell-val" id="cellChallengeFee">$290</span>
+              <span class="strip-cell-sub">Upfront cost</span>
+            </div>
+            <div class="strip-cell">
+              <span class="strip-cell-label">True Cost to Funded</span>
+              <span class="strip-cell-val" id="cellTrueCost">$3,248</span>
+              <span class="strip-cell-sub">Attempts × Fee</span>
+            </div>
+            <div class="strip-cell">
+              <span class="strip-cell-label">Break-Even Cycles</span>
+              <span class="strip-cell-val" id="cellBreakEvenCycles">3 Payouts</span>
+              <span class="strip-cell-sub">To recoup attempts</span>
+            </div>
+            <div class="strip-cell">
+              <span class="strip-cell-label">6M Median Net ROI</span>
+              <span class="strip-cell-val" id="cellMedianRoi" style="color: var(--forest-text);">+$6,352</span>
+              <span class="strip-cell-sub" id="cellMedianRoiPct">+1,080% ROI</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Exact Dollar Math Grid for Selected Account Size -->
+      <div class="telemetry-card">
+        <div class="telemetry-card-title">
+          <span>Account Size Dollar Math</span>
+          <span class="font-mono" id="dollarMathSizeLabel" style="color: var(--gold-dark);">$50,000</span>
+        </div>
+
+        <div class="dollar-math-grid" id="dollarMathGrid">
+          <div class="math-cell">
+            <span class="math-cell-label">Daily Loss Limit $</span>
+            <span class="math-cell-value" id="cellDailyLoss">$1,500</span>
+            <span class="math-cell-sub" id="cellDailyLossPct">3.0% limit</span>
+          </div>
+
+          <div class="math-cell">
+            <span class="math-cell-label">Max Drawdown Floor $</span>
+            <span class="math-cell-value" id="cellMaxLoss">$5,000</span>
+            <span class="math-cell-sub" id="cellMaxLossPct">10.0% max loss</span>
+          </div>
+
+          <div class="math-cell">
+            <span class="math-cell-label">Floating Risk Cap $</span>
+            <span class="math-cell-value" id="cellFloatingCap">$750</span>
+            <span class="math-cell-sub" id="cellFloatingCapPct">-1.5% max open loss</span>
+          </div>
+
+          <div class="math-cell">
+            <span class="math-cell-label">Profit Target $</span>
+            <span class="math-cell-value" id="cellProfitTarget">$4,000</span>
+            <span class="math-cell-sub" id="cellProfitTargetPct">8.0% target</span>
+          </div>
+
+          <div class="math-cell">
+            <span class="math-cell-label">Locked Buffer / Cushion</span>
+            <span class="math-cell-value" id="cellCushion">$0</span>
+            <span class="math-cell-sub" id="cellCushionSub">0.0% cushion</span>
+          </div>
+
+          <div class="math-cell">
+            <span class="math-cell-label">Max Lots FX / Gold</span>
+            <span class="math-cell-value" id="cellMaxLots">5.0 / 2.5</span>
+            <span class="math-cell-sub">Leverage & Click Cap</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 5x5 Win-Rate x Risk-Per-Trade Sensitivity Heatmap -->
+      <div class="telemetry-card">
+        <div class="telemetry-card-title">
+          <span>5×5 Sensitivity Heatmap (Risk vs Win Rate)</span>
+          <span style="font-size: 10px; color: var(--gold-dark); font-weight: 600;">Gold Box = Sweet Spot</span>
+        </div>
+        <div style="overflow-x: auto;">
+          <table class="sensitivity-heatmap-table" id="sensitivityHeatmapTable">
+            <thead>
+              <tr>
+                <th>Win Rate \ Risk</th>
+                <th>0.25%</th>
+                <th>0.50%</th>
+                <th>1.00%</th>
+                <th>1.50%</th>
+                <th>2.00%</th>
+              </tr>
+            </thead>
+            <tbody id="sensitivityHeatmapBody">
+              <!-- Rendered dynamically -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Top 5 Certainty Killers & Marginal Delta Inspector -->
+      <div class="telemetry-card">
+        <div class="telemetry-card-title">
+          <span>Top 5 Certainty Killers (Marginal Impact)</span>
+          <span style="font-size: 10px; font-weight: normal; color: var(--forest-text);">1-Click Disable & Test</span>
+        </div>
+
+        <div class="certainty-killers-list" id="certaintyKillersList">
+          <!-- Rendered dynamically -->
+        </div>
+      </div>
+
+      <!-- Interactive Day-by-Day Equity & Breach Replay Chart (SVG) -->
+      <div class="replay-chart-card">
+        <div class="telemetry-card-title">
+          <span>Day-by-Day Equity & Breach Replay</span>
+          <span class="font-mono" id="replayBreachStatus" style="font-size: 10px; color: var(--crimson-text);">Breach on Day 14</span>
+        </div>
+
+        <div class="replay-controls-row">
+          <select id="replayRunSelect" class="replay-select">
+            <option value="pass_1">Passing Run #1 (+8.4% Target Reached)</option>
+            <option value="pass_2">Passing Run #2 (+9.1% Target Reached)</option>
+            <option value="fail_dl">Failed: Daily Loss Breach (Day 12)</option>
+            <option value="fail_flt">Failed: Floating Risk Trap MAE (Day 7)</option>
+            <option value="fail_dd">Failed: Trailing DD Floor (Day 22)</option>
+            <option value="fail_cons">Failed: Consistency Lockout (Day 48)</option>
+          </select>
+
+          <div class="replay-scrubber-wrapper">
+            <span>Day:</span>
+            <input type="range" id="replayDayScrubber" min="1" max="60" value="60" class="mc-slider" style="width: 110px;">
+            <span class="font-mono" id="replayDayDisplay">60/60</span>
+          </div>
+        </div>
+
+        <div class="replay-svg-container">
+          <svg id="replaySvgChart" width="100%" height="100%" viewBox="0 0 380 120" preserveAspectRatio="none">
+            <!-- Dynamic path rendered by app.js -->
+          </svg>
+        </div>
+      </div>
+
+      <!-- Monte Carlo Strategy Tester Card (Layer 2: 10,000 Paths) -->
+      <div class="monte-carlo-card">
+        <div class="telemetry-card-title">
+          <span>Layer 2: Path-Dependent Monte Carlo (10,000 Paths)</span>
+          <span class="font-mono" id="mcExecutionBadge" style="font-size: 10px; color: var(--text-muted);">Simulated Live</span>
+        </div>
+
+        <div class="mc-controls-grid">
+          <div class="mc-control-item">
+            <div class="mc-control-label-row">
+              <span class="mc-control-name">Win Rate %</span>
+              <span class="mc-control-val" id="mcValWinRate">50%</span>
+            </div>
+            <input type="range" class="mc-slider" id="mcSliderWinRate" min="30" max="80" value="50" step="1">
+          </div>
+
+          <div class="mc-control-item">
+            <div class="mc-control-label-row">
+              <span class="mc-control-name">Avg R:R Ratio</span>
+              <span class="mc-control-val" id="mcValRR">1.50R</span>
+            </div>
+            <input type="range" class="mc-slider" id="mcSliderRR" min="0.5" max="4.0" value="1.5" step="0.1">
+          </div>
+
+          <div class="mc-control-item">
+            <div class="mc-control-label-row">
+              <span class="mc-control-name">Risk / Trade %</span>
+              <span class="mc-control-val" id="mcValRisk">1.0%</span>
+            </div>
+            <input type="range" class="mc-slider" id="mcSliderRisk" min="0.25" max="3.0" value="1.0" step="0.25">
+          </div>
+
+          <div class="mc-control-item">
+            <div class="mc-control-label-row">
+              <span class="mc-control-name">Trades / Day</span>
+              <span class="mc-control-val" id="mcValTradesDay">2</span>
+            </div>
+            <input type="range" class="mc-slider" id="mcSliderTradesDay" min="1" max="8" value="2" step="1">
+          </div>
+
+          <div class="mc-control-item">
+            <div class="mc-control-label-row">
+              <span class="mc-control-name">R:R Variance</span>
+              <span class="mc-control-val" id="mcValVariance">0.30</span>
+            </div>
+            <input type="range" class="mc-slider" id="mcSliderVariance" min="0.0" max="1.0" value="0.3" step="0.05">
+          </div>
+
+          <div class="mc-control-item">
+            <div class="mc-control-label-row">
+              <span class="mc-control-name">MAE Excursion %</span>
+              <span class="mc-control-val" id="mcValMAE">120%</span>
+            </div>
+            <input type="range" class="mc-slider" id="mcSliderMAE" min="80" max="160" value="120" step="5">
+          </div>
+        </div>
+
+        <div class="mc-run-row">
+          <button id="btnRunMonteCarlo" class="btn btn-gold" style="width: 100%;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            Run 10,000 Paths Simulation
+          </button>
+        </div>
+
+        <div class="mc-results-box" id="mcResultsBox">
+          <div class="mc-metrics-summary">
+            <div class="mc-metric-item">
+              <span class="mc-metric-num" id="mcMetricEval">24.6%</span>
+              <span class="mc-metric-label">Sim Eval Pass</span>
+            </div>
+            <div class="mc-metric-item">
+              <span class="mc-metric-num" id="mcMetricFunded">38.2%</span>
+              <span class="mc-metric-label">Sim Funded Pass</span>
+            </div>
+            <div class="mc-metric-item">
+              <span class="mc-metric-num" id="mcMetricEndToEnd" style="color: var(--gold-dark);">9.40%</span>
+              <span class="mc-metric-label">Sim Buy-to-Paid</span>
+            </div>
+          </div>
+
+          <!-- Failure Attribution Tags -->
+          <div class="mc-failure-tags" id="mcFailureTags">
+            <span class="mc-fail-tag" id="tagFailDL">DL Breach: 74%</span>
+            <span class="mc-fail-tag" id="tagFailDD">Max DD: 16%</span>
+            <span class="mc-fail-tag" id="tagFailFlt">Floating Dip: 4%</span>
+            <span class="mc-fail-tag" id="tagFailCons">Consistency: 4%</span>
+            <span class="mc-fail-tag" id="tagFailTime">Timeout: 2%</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Saved Scenario Cockpit & Export Bar -->
+      <div class="scenario-actions-card">
+        <button id="btnSaveCurrentScenario" class="btn" style="width: 100%;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg>
+          Save Custom Scenario
+        </button>
+
+        <div class="export-btn-group">
+          <button id="btnExportMarkdown" class="btn btn-sm" title="Export markdown report">
+            Export .MD
+          </button>
+          <button id="btnExportJson" class="btn btn-sm" title="Export JSON playbook">
+            Export JSON
+          </button>
+          <button id="btnPrintPdf" class="btn btn-sm" title="Print or save as institutional PDF">
+            Print / PDF
+          </button>
+        </div>
+      </div>
+
+    </aside>
+  </main>
+
+  <!-- ==========================================
+       MODALS & DRAWERS
+       ========================================== -->
+
+  <!-- 1. Pre-Trade Violation Sandbox + CSV Importer Modal -->
+  <div class="modal-overlay" id="modalSandbox">
+    <div class="modal-card" style="max-width: 1040px;">
+      <div class="modal-header">
+        <h3 class="modal-title">Pre-Trade Violation Sandbox & Real-Data CSV Importer</h3>
+        <button class="action-icon-btn" id="btnCloseSandbox">✕</button>
+      </div>
+
+      <!-- Tab Switcher inside Modal -->
+      <div class="sandbox-tabs-nav">
+        <button class="sandbox-tab-btn active" id="tabBtnSandboxTicket">Pre-Trade 5-Firm Violation Sandbox</button>
+        <button class="sandbox-tab-btn" id="tabBtnCsvImporter">CSV Trade Log Importer (10,000 Bootstraps)</button>
+      </div>
+
+      <div class="modal-body">
+        <!-- View 1: Sandbox Ticket -->
+        <div id="sandboxTicketView">
+          <p style="font-size: 11.5px; color: var(--text-secondary); margin-bottom: 12px;">
+            Configure your intended trade order parameters below. The audit engine cross-checks all 5 prop firms simultaneously for instant breach, profit deduction, or split slash traps before you execute.
+          </p>
+
+          <div class="sandbox-ticket-grid">
+            <div class="sandbox-ticket-item">
+              <label>Asset Symbol</label>
+              <select id="sbAsset">
+                <option value="EURUSD">EURUSD (FX Major)</option>
+                <option value="GBPUSD">GBPUSD (FX Major)</option>
+                <option value="XAUUSD">XAUUSD (Gold)</option>
+                <option value="US100">US100 (Nasdaq Index)</option>
+                <option value="BTCUSD">BTCUSD (Crypto)</option>
+              </select>
+            </div>
+
+            <div class="sandbox-ticket-item">
+              <label>Lot Size</label>
+              <input type="number" id="sbLotSize" value="5.0" min="0.01" max="100" step="0.1">
+            </div>
+
+            <div class="sandbox-ticket-item">
+              <label>Stop Loss (SL % of Capital)</label>
+              <select id="sbSlPct">
+                <option value="1.0">1.0% Risk SL</option>
+                <option value="0.5">0.5% Risk SL</option>
+                <option value="1.5">1.5% Risk SL</option>
+                <option value="3.2">3.2% Risk SL (High Risk)</option>
+                <option value="0">No Stop Loss Attached (0%)</option>
+              </select>
+            </div>
+
+            <div class="sandbox-ticket-item">
+              <label>Mins from Red-Folder News</label>
+              <select id="sbNewsWindow">
+                <option value="15">15+ mins away (Clean)</option>
+                <option value="8">8 mins away</option>
+                <option value="4">4 mins away (Squad Window)</option>
+                <option value="2">2 mins away (Pips & Next Window)</option>
+                <option value="0">0 mins (During News Release)</option>
+              </select>
+            </div>
+
+            <div class="sandbox-ticket-item">
+              <label>Trade Duration / Hold Time</label>
+              <select id="sbHoldTime">
+                <option value="180">3 minutes (Standard)</option>
+                <option value="75">75 seconds (Passed 60s)</option>
+                <option value="45">45 seconds (&lt;60s Sub-Minute)</option>
+                <option value="15">15 seconds (HFT Scalp)</option>
+              </select>
+            </div>
+
+            <div class="sandbox-ticket-item">
+              <label>Open Same-Asset Positions</label>
+              <select id="sbSameAssetPos">
+                <option value="1">1 position (Single Entry)</option>
+                <option value="2">2 positions (Layering 2)</option>
+                <option value="3">3 positions (Exceeds FS Cap)</option>
+                <option value="5">5 positions (HFT / Pyramiding)</option>
+              </select>
+            </div>
+
+            <div class="sandbox-ticket-item">
+              <label>Mins Since Realized Loss on Same Asset</label>
+              <select id="sbMinsSinceLoss">
+                <option value="30">30+ mins (Safe)</option>
+                <option value="8">8 mins (Within Pipstone 15m Cooldown)</option>
+                <option value="2">2 mins (Immediate Reverse Trade)</option>
+              </select>
+            </div>
+
+            <div class="sandbox-ticket-item" style="grid-column: span 2;">
+              <button class="btn btn-gold" id="btnRunSandboxAudit" style="width: 100%; height: 100%; margin-top: 14px;">
+                Run Instant 5-Firm Real-Time Audit
+              </button>
+            </div>
+          </div>
+
+          <!-- 5-Firm Audit Output Cards -->
+          <div class="firm-audit-cards-grid" id="firmAuditGrid">
+            <!-- Rendered dynamically -->
+          </div>
+        </div>
+
+        <!-- View 2: CSV Importer -->
+        <div id="csvImporterView" style="display: none;">
+          <p style="font-size: 11.5px; color: var(--text-secondary); margin-bottom: 12px;">
+            Import your real historical trading log (from MT4, MT5, cTrader, or TradeLocker) to run a 10,000-path bootstrap simulation directly using your real trade outcome distribution.
+          </p>
+
+          <div class="csv-dropzone" id="csvDropzone">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--gold-dark); margin-bottom: 6px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            <div style="font-weight: 600; font-size: 12.5px;">Click to Upload CSV or Drag & Drop File Here</div>
+            <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">Supports PnL % / Profit, Hold Duration, and Symbol columns</div>
+            <input type="file" id="csvFileInput" accept=".csv" style="display: none;">
+          </div>
+
+          <div style="display: flex; gap: 8px; margin-top: 10px;">
+            <button class="btn btn-sm btn-outline-gold" id="btnLoadSampleCsv">Load Sample 60-Trade Institutional Dataset</button>
+            <button class="btn btn-sm btn-primary" id="btnRunBootstrapMc" disabled>Run 10,000 Bootstrap Resamples</button>
+          </div>
+
+          <!-- Bootstrap Results Box -->
+          <div id="bootstrapResultsBox" style="display: none; background: #FAF8F5; border: 1px solid var(--border-subtle); border-radius: 6px; padding: 12px; margin-top: 14px;">
+            <div style="font-weight: 700; font-size: 12.5px; margin-bottom: 6px;">Bootstrap Empirical Simulation Results (10,000 Runs)</div>
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; text-align: center;">
+              <div>
+                <span class="font-mono" id="bootPassRate" style="font-size: 16px; font-weight: 700; color: var(--forest-text);">0.0%</span>
+                <div style="font-size: 10px; color: var(--text-muted);">Empirical Pass Rate</div>
+              </div>
+              <div>
+                <span class="font-mono" id="bootDDBreachRate" style="font-size: 16px; font-weight: 700; color: var(--crimson-text);">0.0%</span>
+                <div style="font-size: 10px; color: var(--text-muted);">Max DD Liquidation %</div>
+              </div>
+              <div>
+                <span class="font-mono" id="bootTradesCount" style="font-size: 16px; font-weight: 700; color: var(--text-primary);">0</span>
+                <div style="font-size: 10px; color: var(--text-muted);">Historical Trades Sampled</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn" id="btnCloseSandbox2">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. All-Modules Worst-Case Heatmap Modal -->
+  <div class="modal-overlay" id="modalHeatmap">
+    <div class="modal-card" style="max-width: 980px;">
+      <div class="modal-header">
+        <h3 class="modal-title">Compare All 6 Modules Worst-Case Passing Certainty</h3>
+        <button class="action-icon-btn" id="btnCloseHeatmap">✕</button>
+      </div>
+      <div class="modal-body">
+        <p style="font-size: 11.5px; color: var(--text-secondary);">
+          This heatmap synthesizes the harshest rules across all 5 firms for each individual module and calculates the 
+          end-to-end passing certainty across every standard account size ($5K to $200K). Click any cell to jump to that module.
+        </p>
+        <div class="heatmap-table-container">
+          <table class="heatmap-table" id="heatmapTable">
+            <thead>
+              <tr>
+                <th class="col-module">Module Lane</th>
+                <th>$5K</th>
+                <th>$10K</th>
+                <th>$25K</th>
+                <th>$50K</th>
+                <th>$100K</th>
+                <th>$200K</th>
+                <th>Primary Killer Constraint</th>
+              </tr>
+            </thead>
+            <tbody id="heatmapTableBody">
+              <!-- Populated dynamically -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary" id="btnExportHeatmapMd">Export Matrix to Markdown</button>
+        <button class="btn" id="btnCloseHeatmap2">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. Calibrate Weights Drawer -->
+  <div class="drawer-overlay" id="drawerCalibration">
+    <div class="drawer-panel" id="panelCalibration">
+      <div class="drawer-header">
+        <h3 class="modal-title">Calibrate Hazard Attribution Weights</h3>
+        <button class="action-icon-btn" id="btnCloseCalibration">✕</button>
+      </div>
+      <div class="drawer-body">
+        <div style="background: #FAF8F5; border: 1px solid var(--border-subtle); padding: 12px; border-radius: 6px; font-size: 11px; line-height: 1.45;">
+          <strong>Verified 2026 Industry Telemetry Citations:</strong>
+          <ul style="margin-left: 16px; margin-top: 6px; color: var(--text-secondary);">
+            <li><strong>OneFunded:</strong> 78.7% Daily Loss failures, 15.0% Max Drawdown liquidations across 1.4M+ auditions.</li>
+            <li><strong>FPFX Tech:</strong> Direct-to-funded (Instant) accounts face 72% attrition prior to first reward.</li>
+            <li><strong>Track360:</strong> High-watermark resets & 15% consistency caps degrade funded survival by 38%–52%.</li>
+          </ul>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 8px;">
+          <div>
+            <label style="font-size: 11px; font-weight: 600;">Daily Loss 3% Hazard Penalty</label>
+            <input type="range" class="mc-slider" id="calibDL3" min="0.50" max="0.95" step="0.02" value="0.74">
+            <span class="font-mono" id="calibDL3Val" style="font-size: 11px;">0.74x (-26% rel.)</span>
+          </div>
+
+          <div>
+            <label style="font-size: 11px; font-weight: 600;">Daily Loss 1% Extreme Trap Penalty</label>
+            <input type="range" class="mc-slider" id="calibDL1" min="0.15" max="0.60" step="0.02" value="0.32">
+            <span class="font-mono" id="calibDL1Val" style="font-size: 11px;">0.32x (-68% rel.)</span>
+          </div>
+
+          <div>
+            <label style="font-size: 11px; font-weight: 600;">Floating Risk -1.0% Hard Breach Penalty</label>
+            <input type="range" class="mc-slider" id="calibFlt1" min="0.30" max="0.80" step="0.02" value="0.52">
+            <span class="font-mono" id="calibFlt1Val" style="font-size: 11px;">0.52x (-48% rel.)</span>
+          </div>
+
+          <div>
+            <label style="font-size: 11px; font-weight: 600;">15% Dual Consistency Rule Penalty</label>
+            <input type="range" class="mc-slider" id="calibCons15" min="0.30" max="0.75" step="0.02" value="0.48">
+            <span class="font-mono" id="calibCons15Val" style="font-size: 11px;">0.48x (-52% rel.)</span>
+          </div>
+
+          <div>
+            <label style="font-size: 11px; font-weight: 600;">Nuclear &lt;60s & Floating Slash (20% Split & Termination)</label>
+            <input type="range" class="mc-slider" id="calibHold60" min="0.50" max="0.90" step="0.02" value="0.70">
+            <span class="font-mono" id="calibHold60Val" style="font-size: 11px;">0.70x (-30% rel.)</span>
+          </div>
+        </div>
+
+        <button id="btnResetCalibration" class="btn" style="margin-top: 10px;">Reset to Factory Empirical Weights</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. Saved Scenarios & Presets Drawer -->
+  <div class="drawer-overlay" id="drawerPresets">
+    <div class="drawer-panel" id="panelPresets">
+      <div class="drawer-header">
+        <h3 class="modal-title">Saved Scenarios & Benchmark Presets</h3>
+        <button class="action-icon-btn" id="btnClosePresets">✕</button>
+      </div>
+      <div class="drawer-body">
+        <h4 style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text-muted);">Curated Benchmark Presets</h4>
+        <div id="preloadedPresetsList" style="display: flex; flex-direction: column; gap: 8px;">
+          <!-- Loaded dynamically -->
+        </div>
+
+        <h4 style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); margin-top: 14px;">User Custom Scenarios</h4>
+        <div id="userScenariosList" style="display: flex; flex-direction: column; gap: 8px;">
+          <!-- Loaded dynamically -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. Add Custom Rule Modal -->
+  <div class="modal-overlay" id="modalAddCustomRule">
+    <div class="modal-card" style="max-width: 500px;">
+      <div class="modal-header">
+        <h3 class="modal-title">Add Custom / Prop Proprietary Rule</h3>
+        <button class="action-icon-btn" id="btnCloseAddRule">✕</button>
+      </div>
+      <div class="modal-body">
+        <div style="display: flex; flex-direction: column; gap: 4px;">
+          <label style="font-size: 11px; font-weight: 600;">Rule Title</label>
+          <input type="text" id="customRuleTitle" placeholder="e.g. Max Open Lots Cap" style="padding: 7px; border: 1px solid var(--border-light); border-radius: 4px;">
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 4px;">
+          <label style="font-size: 11px; font-weight: 600;">Category Bucket</label>
+          <select id="customRuleCategory" style="padding: 7px; border: 1px solid var(--border-light); border-radius: 4px;">
+            <option value="targets_dd">Targets & Drawdown Architecture</option>
+            <option value="intraday_floating">Intraday & Floating Risk Traps</option>
+            <option value="consistency_buffer">Consistency, Min Days & Profit Caps</option>
+            <option value="execution_news">News, Holding Time & Execution Traps</option>
+            <option value="payout_fees">Payout Gates, Split Cuts & Fees</option>
+            <option value="big_throttles">Big-Account Throttles</option>
+          </select>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 4px;">
+          <label style="font-size: 11px; font-weight: 600;">Threshold Specification</label>
+          <input type="text" id="customRuleThreshold" placeholder="e.g. 5.0 lots max on indices" style="padding: 7px; border: 1px solid var(--border-light); border-radius: 4px;">
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+          <div style="display: flex; flex-direction: column; gap: 4px;">
+            <label style="font-size: 11px; font-weight: 600;">Severity Level</label>
+            <select id="customRuleSeverity" style="padding: 7px; border: 1px solid var(--border-light); border-radius: 4px;">
+              <option value="hard">Hard Breach</option>
+              <option value="soft">Soft Breach / Penalty</option>
+              <option value="friction">Friction / Payout Lock</option>
+            </select>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 4px;">
+            <label style="font-size: 11px; font-weight: 600;">Certainty Multiplier</label>
+            <input type="number" id="customRuleMultiplier" min="0.2" max="1.0" step="0.05" value="0.85" style="padding: 7px; border: 1px solid var(--border-light); border-radius: 4px;">
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary" id="btnSaveCustomRule">Add Rule to Workspace</button>
+        <button class="btn" id="btnCloseAddRule2">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 6. Inline Edit Rule Modal -->
+  <div class="modal-overlay" id="modalEditRule">
+    <div class="modal-card" style="max-width: 480px;">
+      <div class="modal-header">
+        <h3 class="modal-title">Edit Rule Parameters</h3>
+        <button class="action-icon-btn" id="btnCloseEditRule">✕</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="editRuleId">
+        <div style="display: flex; flex-direction: column; gap: 4px;">
+          <label style="font-size: 11px; font-weight: 600;">Rule Title</label>
+          <input type="text" id="editRuleTitle" style="padding: 7px; border: 1px solid var(--border-light); border-radius: 4px;">
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 4px;">
+          <label style="font-size: 11px; font-weight: 600;">Threshold Text</label>
+          <input type="text" id="editRuleThresholdText" style="padding: 7px; border: 1px solid var(--border-light); border-radius: 4px;">
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 4px;">
+          <label style="font-size: 11px; font-weight: 600;">Hazard Multiplier</label>
+          <input type="number" id="editRuleMultiplier" min="0.1" max="1.05" step="0.02" style="padding: 7px; border: 1px solid var(--border-light); border-radius: 4px;">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary" id="btnSaveEditRule">Save Changes</button>
+        <button class="btn" id="btnCloseEditRule2">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- Scripts -->
+  <script src="data/benchmarks.js"></script>
+  <script src="data/firmsData.js"></script>
+  <script src="engine/probabilityEngine.js"></script>
+  <script src="engine/clipboardAndEvaluator.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
