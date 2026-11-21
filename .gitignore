@@ -4,3 +4,4 @@ __pycache__/
 dom_dump.html
 .DS_Store
 Thumbs.db
+*.zip

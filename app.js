@@ -13,6 +13,8 @@
 
     checkedRulesByModule: {
       instant: new Set(),
+      instant1k: new Set(),
+      instant2k5: new Set(),
       oneStepStd: new Set(),
       twoStepStd: new Set(),
       bigAccounts: new Set()
@@ -20,6 +22,8 @@
 
     importedRulesByModule: {
       instant: [],
+      instant1k: [],
+      instant2k5: [],
       oneStepStd: [],
       twoStepStd: [],
       bigAccounts: []
@@ -27,6 +31,8 @@
 
     customRulesByModule: {
       instant: [],
+      instant1k: [],
+      instant2k5: [],
       oneStepStd: [],
       twoStepStd: [],
       bigAccounts: []
@@ -276,6 +282,30 @@
         state.checkedRulesByModule.instant.add(r.id);
       }
     });
+
+    const instant1kRules = window.FIRMS_DATA_HELPER.getRulesByModule("instant1k");
+    instant1kRules.forEach(r => {
+      if (r.id === "fp_1k_no_max_loss" || r.id === "fp_1k_flt_1pct" || r.id === "fp_1k_payout_cap" || r.id === "fp_1k_split_payout") {
+        state.checkedRulesByModule.instant1k.add(r.id);
+      }
+    });
+
+    const instant2k5Rules = window.FIRMS_DATA_HELPER.getRulesByModule("instant2k5");
+    instant2k5Rules.forEach(r => {
+      if (r.id === "fp_2k5_no_max_loss" || r.id === "fp_2k5_flt_1pct" || r.id === "fp_2k5_payout_cap" || r.id === "fp_2k5_split_payout") {
+        state.checkedRulesByModule.instant2k5.add(r.id);
+      }
+    });
+  }
+
+  function setAccountSize(size, suppressToast = false) {
+    state.accountSize = size;
+    document.querySelectorAll(".size-pill-btn").forEach(p => {
+      if (parseInt(p.dataset.size, 10) === size) p.classList.add("active");
+      else p.classList.remove("active");
+    });
+    recalculateAll();
+    if (!suppressToast) showToast(`Account Size: $${size.toLocaleString()}`);
   }
 
   function bindEvents() {
@@ -295,11 +325,7 @@
       if (!pill) return;
       const size = parseInt(pill.dataset.size, 10);
       if (size && size !== state.accountSize) {
-        state.accountSize = size;
-        document.querySelectorAll(".size-pill-btn").forEach(p => p.classList.remove("active"));
-        pill.classList.add("active");
-        recalculateAll();
-        showToast(`Account Size: $${size.toLocaleString()}`);
+        setAccountSize(size);
       }
     });
 
@@ -855,6 +881,13 @@
       DOM.activeModuleMeta.textContent = baseInfo.description;
     }
 
+    // Auto-select corresponding account size for exclusive micro models
+    if (modId === "instant1k" && state.accountSize !== 1000) {
+      setAccountSize(1000, true);
+    } else if (modId === "instant2k5" && state.accountSize !== 2500) {
+      setAccountSize(2500, true);
+    }
+
     renderActiveModule();
     updateClipboardUI();
     recalculateAll();
@@ -1076,8 +1109,8 @@
     DOM.cellEvPerTradeDollar.textContent = `${preCheck.evPerTradeDollar > 0 ? '+' : ''}$${preCheck.evPerTradeDollar.toLocaleString()} / trade`;
     DOM.cellLossesToDaily.textContent = `${preCheck.lossesToDailyBreach} Trades`;
     DOM.cellDailyMarginSub.textContent = `at ${state.mcParams.riskPct}% risk`;
-    DOM.cellLossesToMax.textContent = `${preCheck.lossesToMaxBreach} Trades`;
-    DOM.cellHurdleSub.textContent = `Hurdle: ${preCheck.hurdleRatio}x`;
+    DOM.cellLossesToMax.textContent = typeof preCheck.lossesToMaxBreach === 'number' ? `${preCheck.lossesToMaxBreach} Trades` : preCheck.lossesToMaxBreach;
+    DOM.cellHurdleSub.textContent = preCheck.hasNoMaxLoss ? 'Zero Max DD Barrier' : `Hurdle: ${preCheck.hurdleRatio}x`;
 
     // 3. Stage Funnels
     DOM.funnelP1Val.textContent = `${result.p1Certainty.toFixed(1)}%`;
@@ -1111,19 +1144,24 @@
     DOM.dollarMathSizeLabel.textContent = `$${state.accountSize.toLocaleString()}`;
     DOM.cellDailyLoss.textContent = `$${Math.round(dMath.dailyLossDollar).toLocaleString()}`;
     DOM.cellDailyLossPct.textContent = `${dMath.dailyLossPct}% limit`;
-    DOM.cellMaxLoss.textContent = `$${Math.round(dMath.maxLossDollar).toLocaleString()}`;
-    DOM.cellMaxLossPct.textContent = `${dMath.maxDDPct}% max loss`;
+    DOM.cellMaxLoss.textContent = typeof dMath.maxLossDollar === 'number' && isFinite(dMath.maxLossDollar) ? `$${Math.round(dMath.maxLossDollar).toLocaleString()}` : 'No Limit';
+    DOM.cellMaxLossPct.textContent = typeof dMath.maxDDPct === 'number' ? `${dMath.maxDDPct}% max loss` : 'Zero DD Limit';
 
     if (dMath.floatingCapDollar !== null) {
-      DOM.cellFloatingCap.textContent = `$${Math.round(dMath.floatingCapDollar).toLocaleString()}`;
+      DOM.cellFloatingCap.textContent = `$${dMath.floatingCapDollar < 50 ? dMath.floatingCapDollar.toFixed(2) : Math.round(dMath.floatingCapDollar).toLocaleString()}`;
       DOM.cellFloatingCapPct.textContent = `-${dMath.floatingPct}% open limit`;
     } else {
       DOM.cellFloatingCap.textContent = "None";
       DOM.cellFloatingCapPct.textContent = "Unrestricted";
     }
 
-    DOM.cellProfitTarget.textContent = `$${Math.round(dMath.profitTargetDollar).toLocaleString()}`;
-    DOM.cellProfitTargetPct.textContent = `${dMath.profitTargetPct}% target`;
+    if (state.currentModule.startsWith('instant')) {
+      DOM.cellProfitTarget.textContent = "Direct Funded";
+      DOM.cellProfitTargetPct.textContent = "No Eval Hurdle";
+    } else {
+      DOM.cellProfitTarget.textContent = `$${Math.round(dMath.profitTargetDollar).toLocaleString()}`;
+      DOM.cellProfitTargetPct.textContent = `${dMath.profitTargetPct}% target`;
+    }
 
     if (dMath.cushionDollar > 0) {
       DOM.cellCushion.textContent = `$${Math.round(dMath.cushionDollar).toLocaleString()}`;
@@ -1631,9 +1669,13 @@
 
     md += `## 2. Dollar Risk Allowance ($${state.accountSize.toLocaleString()})\n`;
     md += `- Daily Loss Limit: **$${Math.round(result.dollarMath.dailyLossDollar).toLocaleString()}** (${result.dollarMath.dailyLossPct}%)\n`;
-    md += `- Max Drawdown Floor: **$${Math.round(result.dollarMath.maxLossDollar).toLocaleString()}** (${result.dollarMath.maxDDPct}%)\n`;
+    const maxLossMd = typeof result.dollarMath.maxLossDollar === 'number' && isFinite(result.dollarMath.maxLossDollar)
+      ? `$${Math.round(result.dollarMath.maxLossDollar).toLocaleString()} (${result.dollarMath.maxDDPct}%)`
+      : 'No Limit (Zero Cumulative Barrier)';
+    md += `- Max Drawdown Floor: **${maxLossMd}**\n`;
     if (result.dollarMath.floatingCapDollar) {
-      md += `- Floating Risk Cap: **$${Math.round(result.dollarMath.floatingCapDollar).toLocaleString()}** (-${result.dollarMath.floatingPct}%)\n`;
+      const fltCapFormatted = result.dollarMath.floatingCapDollar < 50 ? result.dollarMath.floatingCapDollar.toFixed(2) : Math.round(result.dollarMath.floatingCapDollar).toLocaleString();
+      md += `- Floating Risk Cap: **$${fltCapFormatted}** (-${result.dollarMath.floatingPct}%)\n`;
     }
     md += `- Target Profit: **$${Math.round(result.dollarMath.profitTargetDollar).toLocaleString()}** (${result.dollarMath.profitTargetPct}%)\n`;
     md += `- Effective Max Lots: **${result.dollarMath.maxFxLots} FX / ${result.dollarMath.maxGoldLots} Gold**\n\n`;

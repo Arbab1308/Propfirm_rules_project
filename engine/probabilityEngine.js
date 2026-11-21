@@ -112,9 +112,11 @@ class ProbabilityEngine {
     let dlPct = 5.0;
     let maxDDPct = 10.0;
     let targetPct = 8.0;
+    let hasNoMaxLoss = false;
 
     activeRules.forEach(r => {
       if (r.isSuperseded) return;
+      if (r.ruleType === "no_max_loss" || r.id?.includes("no_max_loss")) hasNoMaxLoss = true;
       if (r.ruleType === "daily_loss" && r.thresholdValue) dlPct = Math.min(dlPct, r.thresholdValue);
       if (r.ruleType === "max_drawdown" && r.thresholdValue) maxDDPct = Math.min(maxDDPct, r.thresholdValue);
       if (r.ruleType === "profit_target" && r.thresholdValue) targetPct = r.thresholdValue;
@@ -130,10 +132,10 @@ class ProbabilityEngine {
 
     // 3. Consecutive Straight Losses to Breach
     const lossesToDailyBreach = Math.max(1, Math.floor(dlPct / riskPct));
-    const lossesToMaxBreach = Math.max(1, Math.floor(maxDDPct / riskPct));
+    const lossesToMaxBreach = hasNoMaxLoss ? "No Limit" : Math.max(1, Math.floor(maxDDPct / riskPct));
 
     // 4. Hurdle Ratio (Target / Max Drawdown)
-    const hurdleRatio = parseFloat((targetPct / maxDDPct).toFixed(2));
+    const hurdleRatio = hasNoMaxLoss ? 0.0 : parseFloat((targetPct / maxDDPct).toFixed(2));
 
     return {
       breakEvenWinRatePct,
@@ -144,7 +146,8 @@ class ProbabilityEngine {
       lossesToMaxBreach,
       hurdleRatio,
       bindingDailyLossPct: dlPct,
-      bindingMaxDDPct: maxDDPct,
+      bindingMaxDDPct: hasNoMaxLoss ? "No Limit" : maxDDPct,
+      hasNoMaxLoss,
       targetPct
     };
   }
@@ -155,9 +158,9 @@ class ProbabilityEngine {
   calculateRetainedSplitAndEconomics(moduleId, activeRules, accountSize = 50000, passCertainty = 5.0) {
     // 1. Determine Nominal Base Profit Split
     let baseNominalSplit = 80;
-    if (moduleId === "instant") {
+    if (moduleId === "instant" || moduleId === "instant1k" || moduleId === "instant2k5") {
       baseNominalSplit = 80;
-      if (activeRules.some(r => r.firmId === "fundingpips")) baseNominalSplit = 95;
+      if (activeRules.some(r => r.firmId === "fundingpips" && moduleId === "instant")) baseNominalSplit = 95;
       if (activeRules.some(r => r.id === "fn_inst_stellar_split_lock")) baseNominalSplit = 70;
       if (activeRules.some(r => r.id === "fn_inst_cap_scale")) baseNominalSplit = 60;
       if (activeRules.some(r => r.id === "ps_inst_pro_dd4")) baseNominalSplit = 70;
@@ -174,13 +177,13 @@ class ProbabilityEngine {
     let profitHaircutPct = 0;
 
     // Pipstone nuclear floating slash (20% or 10%)
-    if (activeRules.some(r => r.id === "ps_univ_floating_nuclear_slash" || r.id === "ps_inst_floating_nuclear" || r.id === "ps_univ_nuclear_hold" || r.id === "ps_inst_hold_reversal")) {
+    if (activeRules.some(r => r.id === "ps_univ_floating_nuclear_slash" || r.id === "ps_inst_floating_nuclear" || r.id === "ps_1k_flt_1pct" || r.id === "ps_2k5_flt_1pct" || r.id === "ps_univ_nuclear_hold" || r.id === "ps_inst_hold_reversal")) {
       effectiveRetainedSplit = Math.min(effectiveRetainedSplit, 20);
       splitSlashReason = "Pipstone Nuclear Slash (20% split on 1st violation + closure)";
     }
 
     // FundedSquad 1% float breach (30% split)
-    if (activeRules.some(r => r.id === "fs_inst_flex_flt")) {
+    if (activeRules.some(r => r.id === "fs_inst_flex_flt" || r.id === "fs_1k_flt_1pct" || r.id === "fs_2k5_flt_1pct")) {
       effectiveRetainedSplit = Math.min(effectiveRetainedSplit, 30);
       splitSlashReason = "FundedSquad 1.0% Float Breach (Permanent 30% split)";
     }
@@ -198,12 +201,12 @@ class ProbabilityEngine {
     }
 
     // Asymmetric News 40% haircut
-    if (activeRules.some(r => r.id === "fn_univ_news_haircut" || r.id === "fn_2s_news_haircut" || r.id === "fn_1s_leverage_news" || r.id === "fn_inst_news_leverage")) {
+    if (activeRules.some(r => r.id === "fn_univ_news_haircut" || r.id === "fn_2s_news_haircut" || r.id === "fn_1s_leverage_news" || r.id === "fn_inst_news_leverage" || r.id === "fn_1k_news_haircut" || r.id === "fn_2k5_news_haircut")) {
       profitHaircutPct += 15; // Estimated 15% overall net profit drag from news haircuts
     }
 
     // Mandatory Stop Loss violation (100% deduction on violating trades)
-    if (activeRules.some(r => r.id === "fn_mandatory_stop_loss")) {
+    if (activeRules.some(r => r.id === "fn_mandatory_stop_loss" || r.id === "fn_1k_sl_rule" || r.id === "fn_2k5_sl_rule")) {
       profitHaircutPct += 8; // Estimated 8% net drag from occasional unattached SL slip
     }
 
@@ -211,6 +214,8 @@ class ProbabilityEngine {
 
     // 3. Challenge Fee Estimation
     const feeTable = {
+      1000: 20,
+      2500: 35,
       5000: 45,
       10000: 85,
       25000: 175,
@@ -226,9 +231,14 @@ class ProbabilityEngine {
     const trueCostToFunded = Math.round(expectedAttempts * challengeFee);
 
     // 5. Break-Even Payout Cycle
-    // Assume average winning payout cycle produces 4% profit on account size
+    // Check if 5% first payout cap applies
+    const has5PctCap = activeRules.some(r => (r.ruleType === "payout_cap" && r.thresholdValue === 5) || (r.id && r.id.includes("payout_cap")));
     const estCycleProfitDollar = accountSize * 0.04;
-    const estCyclePayoutDollar = estCycleProfitDollar * (effectiveRetainedSplit / 100.0);
+    let estCyclePayoutDollar = estCycleProfitDollar * (effectiveRetainedSplit / 100.0);
+    if (has5PctCap) {
+      const maxFirstPayoutDollar = accountSize * 0.05;
+      estCyclePayoutDollar = Math.min(estCyclePayoutDollar, maxFirstPayoutDollar);
+    }
     const breakEvenCycles = Math.max(1, Math.ceil(trueCostToFunded / Math.max(100, estCyclePayoutDollar)));
 
     // 6. 6-Month Net ROI projections
@@ -380,23 +390,35 @@ class ProbabilityEngine {
     let floatingPct = 10.0;
     let profitTargetPct = 8.0;
     let cushionPct = 0.0;
+    let hasNoMaxLoss = false;
+    let firstPayoutCapPct = null;
 
     activeRules.forEach(r => {
+      if (r.ruleType === "no_max_loss" || (r.id && r.id.includes("no_max_loss"))) hasNoMaxLoss = true;
       if (r.ruleType === "daily_loss" && r.thresholdValue) dlPct = Math.min(dlPct, r.thresholdValue);
       if (r.ruleType === "max_drawdown" && r.thresholdValue) maxDDPct = Math.min(maxDDPct, r.thresholdValue);
       if (r.ruleType === "floating_risk" && r.thresholdValue) floatingPct = Math.min(floatingPct, r.thresholdValue);
       if (r.ruleType === "profit_target" && r.thresholdValue) profitTargetPct = r.thresholdValue;
+      if (r.ruleType === "payout_cap" && r.thresholdValue) firstPayoutCapPct = r.thresholdValue;
       if (r.id === "fp_inst_cushion_days") cushionPct = 3.0;
     });
 
     const dailyLossDollar = (accountSize * dlPct) / 100.0;
-    const maxLossDollar = (accountSize * maxDDPct) / 100.0;
+    const maxLossDollar = hasNoMaxLoss ? "No Limit" : (accountSize * maxDDPct) / 100.0;
     const floatingCapDollar = floatingPct < 10 ? (accountSize * floatingPct) / 100.0 : null;
     const profitTargetDollar = (accountSize * profitTargetPct) / 100.0;
     const cushionDollar = cushionPct > 0 ? (accountSize * cushionPct) / 100.0 : 0;
+    const firstPayoutCapDollar = firstPayoutCapPct !== null ? (accountSize * firstPayoutCapPct) / 100.0 : null;
 
     let maxFxLots = (accountSize / 100000) * 10;
     let maxGoldLots = (accountSize / 100000) * 5;
+    if (accountSize <= 1000) {
+      maxFxLots = 0.5;
+      maxGoldLots = 0.25;
+    } else if (accountSize <= 2500) {
+      maxFxLots = 1.25;
+      maxGoldLots = 0.6;
+    }
 
     const hasFSLotCap = activeRules.some(r => r.id === "fs_big_lot_caps");
     if (hasFSLotCap) {
@@ -418,16 +440,19 @@ class ProbabilityEngine {
       accountSize,
       dailyLossPct: dlPct,
       dailyLossDollar,
-      maxDDPct,
+      maxDDPct: hasNoMaxLoss ? "No Limit" : maxDDPct,
       maxLossDollar,
+      hasNoMaxLoss,
       floatingPct: floatingPct < 10 ? floatingPct : null,
       floatingCapDollar,
+      firstPayoutCapPct,
+      firstPayoutCapDollar,
       profitTargetPct,
       profitTargetDollar,
       cushionPct,
       cushionDollar,
-      maxFxLots: parseFloat(maxFxLots.toFixed(1)),
-      maxGoldLots: parseFloat(maxGoldLots.toFixed(1))
+      maxFxLots: parseFloat(maxFxLots.toFixed(2)),
+      maxGoldLots: parseFloat(maxGoldLots.toFixed(2))
     };
   }
 
@@ -497,6 +522,7 @@ class ProbabilityEngine {
     let targetPct = 0.08;
     let isTrailingDD = false;
     let isLiveEquityRecalc = false;
+    let hasNoMaxLoss = false;
     let floatingRiskCapPct = 0.99;
     let consistencyMaxRatio = 1.0;
     let requiredProfitableDays = 0;
@@ -505,6 +531,7 @@ class ProbabilityEngine {
 
     activeRules.forEach(r => {
       if (r.isSuperseded) return;
+      if (r.ruleType === "no_max_loss" || (r.id && r.id.includes("no_max_loss"))) hasNoMaxLoss = true;
       if (r.ruleType === "daily_loss" && r.thresholdValue) dailyLossLimitPct = r.thresholdValue / 100.0;
       if (r.ruleType === "max_drawdown" && r.thresholdValue) maxDrawdownLimitPct = r.thresholdValue / 100.0;
       if (r.ruleType === "profit_target" && r.thresholdValue) targetPct = r.thresholdValue / 100.0;
@@ -624,20 +651,22 @@ class ProbabilityEngine {
             break;
           }
 
-          // Max Drawdown Breach Check
-          const baseForMaxDD = isTrailingDD ? highWatermark : 1.0;
-          const currentMaxLossPct = (baseForMaxDD - balance) / baseForMaxDD;
-          if (currentMaxLossPct >= maxDrawdownLimitPct) {
-            failed = true;
-            failReason = "maxDrawdown";
-            breachDay = day + 1;
-            break;
+          // Max Drawdown Breach Check (Bypassed if No Max Loss Limit is active)
+          if (!hasNoMaxLoss) {
+            const baseForMaxDD = isTrailingDD ? highWatermark : 1.0;
+            const currentMaxLossPct = (baseForMaxDD - balance) / baseForMaxDD;
+            if (currentMaxLossPct >= maxDrawdownLimitPct) {
+              failed = true;
+              failReason = "maxDrawdown";
+              breachDay = day + 1;
+              break;
+            }
           }
         }
 
         // Record daily points for replay chart
         if (shouldRecordPath) {
-          const currentMaxFloor = isTrailingDD ? Math.max(1.0 - maxDrawdownLimitPct, highWatermark - maxDrawdownLimitPct) : (1.0 - maxDrawdownLimitPct);
+          const currentMaxFloor = hasNoMaxLoss ? 0.0 : (isTrailingDD ? Math.max(1.0 - maxDrawdownLimitPct, highWatermark - maxDrawdownLimitPct) : (1.0 - maxDrawdownLimitPct));
           const currentDayFloor = dayStartEquityFloor * (1.0 - dailyLossLimitPct);
           pathDayHistory.push({
             day: day + 1,

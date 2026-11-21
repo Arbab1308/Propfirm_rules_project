@@ -66,8 +66,8 @@ runTest('All 5 Prop Firms strictly represented in dataset', () => {
   });
 });
 
-runTest('4 Module lanes strictly separated with non-zero native rules', () => {
-  const lanes = ['instant', 'oneStepStd', 'twoStepStd', 'bigAccounts'];
+runTest('6 Module lanes strictly separated with non-zero native rules', () => {
+  const lanes = ['instant', 'instant1k', 'instant2k5', 'oneStepStd', 'twoStepStd', 'bigAccounts'];
   lanes.forEach(m => {
     const rules = rawRules.filter(r => r.module === m);
     assert(rules.length >= 5, `Module lane '${m}' has fewer than 5 rules (found ${rules.length})`);
@@ -344,6 +344,50 @@ runTest('CSV Parser and 10,000 Bootstrap Resampling accurately evaluates real tr
   assert(bootstrap.bootstrapPassRate >= 0 && bootstrap.bootstrapPassRate <= 100, 'Bootstrap pass rate must be 0-100%');
   assert.strictEqual(bootstrap.sampleSize, 10);
   assert.strictEqual(bootstrap.totalSims, 1000);
+});
+
+// -------------------------------------------------------------
+// TEST SUITE 9: Exclusive Instant $1K & $2.5K Models
+// -------------------------------------------------------------
+runTest('Exclusive $1K and $2.5K Instant Models: Verification of No Max Loss, -1% Floating Cap & 5% Payout Cap', () => {
+  const rules1k = firmsHelper.getRulesByModule('instant1k');
+  const rules2k5 = firmsHelper.getRulesByModule('instant2k5');
+  assert(rules1k.length >= 10, `Expected >= 10 rules in instant1k, got ${rules1k.length}`);
+  assert(rules2k5.length >= 10, `Expected >= 10 rules in instant2k5, got ${rules2k5.length}`);
+
+  // Check No Max Loss rule in 1K
+  const noMaxLoss1k = rules1k.find(r => r.ruleType === 'no_max_loss');
+  assert(noMaxLoss1k, 'No Max Loss rule missing from instant1k');
+
+  // Check -1% Floating Cap in 1K ($10.00)
+  const flt1k = rules1k.find(r => r.ruleType === 'floating_risk' && r.thresholdValue === 1.0);
+  assert(flt1k, '-1.0% Floating risk rule missing from instant1k');
+
+  // Check 5% First Payout Cap in 1K ($50.00)
+  const payoutCap1k = rules1k.find(r => r.ruleType === 'payout_cap' && r.thresholdValue === 5.0);
+  assert(payoutCap1k, '5% First Payout Cap rule missing from instant1k');
+
+  // Test Dollar Math on $1,000 account
+  const dMath1k = engine.calculateDollarMath(1000, [noMaxLoss1k, flt1k, payoutCap1k]);
+  assert.strictEqual(dMath1k.hasNoMaxLoss, true);
+  assert.strictEqual(dMath1k.maxLossDollar, 'No Limit');
+  assert.strictEqual(dMath1k.floatingCapDollar, 10.0);
+  assert.strictEqual(dMath1k.firstPayoutCapDollar, 50.0);
+
+  // Test Dollar Math on $2,500 account
+  const noMaxLoss2k5 = rules2k5.find(r => r.ruleType === 'no_max_loss');
+  const flt2k5 = rules2k5.find(r => r.ruleType === 'floating_risk' && r.thresholdValue === 1.0);
+  const payoutCap2k5 = rules2k5.find(r => r.ruleType === 'payout_cap' && r.thresholdValue === 5.0);
+  const dMath2k5 = engine.calculateDollarMath(2500, [noMaxLoss2k5, flt2k5, payoutCap2k5]);
+  assert.strictEqual(dMath2k5.hasNoMaxLoss, true);
+  assert.strictEqual(dMath2k5.maxLossDollar, 'No Limit');
+  assert.strictEqual(dMath2k5.floatingCapDollar, 25.0);
+  assert.strictEqual(dMath2k5.firstPayoutCapDollar, 125.0);
+
+  // Pre-check test
+  const preCheck1k = engine.calculateAnalyticalPreCheck({ winRate: 50, avgRR: 1.5, riskPct: 1.0 }, [noMaxLoss1k, flt1k], 1000);
+  assert.strictEqual(preCheck1k.lossesToMaxBreach, 'No Limit');
+  assert.strictEqual(preCheck1k.hurdleRatio, 0.0);
 });
 
 // -------------------------------------------------------------

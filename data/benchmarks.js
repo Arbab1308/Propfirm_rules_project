@@ -32,6 +32,24 @@ const BENCHMARKS_DATA = {
 
   // Module Empirical Baseline Rates (at $25K-$50K Neutral Account Size, vanilla standard rules)
   moduleBaselines: {
+    instant1k: {
+      id: "instant1k",
+      name: "Instant $1K (Exclusive Micro)",
+      p1PassRate: 100.0,
+      p2PassRate: null,
+      fundedSurvivalRate: 22.0,
+      endToEndRate: 22.0,
+      description: "Exclusive $1,000 Micro Instant Funded Account. No max loss limit, but strict -1.0% ($10.00) floating loss hard cap & 5% first payout cap ($50.00 max)."
+    },
+    instant2k5: {
+      id: "instant2k5",
+      name: "Instant $2.5K (Exclusive Starter)",
+      p1PassRate: 100.0,
+      p2PassRate: null,
+      fundedSurvivalRate: 25.0,
+      endToEndRate: 25.0,
+      description: "Exclusive $2,500 Starter Instant Funded Account. No max loss limit, but strict -1.0% ($25.00) floating loss hard cap & 5% first payout cap ($125.00 max)."
+    },
     instant: {
       id: "instant",
       name: "Instant (Direct-to-Funded)",
@@ -90,6 +108,18 @@ const BENCHMARKS_DATA = {
 
   // Account Size Empirical Multipliers (Reflecting retail behavior & institutional risk throttle cliffs)
   accountSizeModifiers: {
+    1000: {
+      size: 1000,
+      label: "$1K",
+      multiplier: 0.82,
+      reasoning: "Micro-capital execution friction, spread-to-stop drag, and strict -1.0% ($10.00) floating drawdown barrier."
+    },
+    2500: {
+      size: 2500,
+      label: "$2.5K",
+      multiplier: 0.85,
+      reasoning: "Starter micro-account sizing friction with strict -1.0% ($25.00) floating loss cap."
+    },
     5000: {
       size: 5000,
       label: "$5K",
